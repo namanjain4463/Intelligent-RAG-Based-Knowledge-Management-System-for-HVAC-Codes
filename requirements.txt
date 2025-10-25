@@ -1,0 +1,14 @@
+# HVAC Knowledge Graph System - Requirements
+
+## Python Dependencies
+neo4j>=5.14.0
+PyMuPDF>=1.23.0
+langchain>=0.1.0
+langchain-neo4j>=0.1.0
+langchain-openai>=0.0.5
+streamlit>=1.29.0
+openai>=1.6.0
+python-dotenv>=1.0.0
+
+## Optional (for advanced features)
+spacy>=3.7.0
