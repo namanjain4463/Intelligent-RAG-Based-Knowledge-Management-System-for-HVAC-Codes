@@ -1,14 +1,16 @@
-import os
-from dotenv import load_dotenv
-
-# Load environment variables from .env file
-load_dotenv()
-
-# Connect to Neo4j
+"""
+Neo4j Graph Database Connection
+"""
 from langchain_neo4j import Neo4jGraph
+from config import Config
 
+# Initialize Neo4j connection
 graph = Neo4jGraph(
-    url=os.getenv("NEO4J_URI"),
-    username=os.getenv("NEO4J_USERNAME"),
-    password=os.getenv("NEO4J_PASSWORD"),
+    url=Config.NEO4J_URI,
+    username=Config.NEO4J_USERNAME,
+    password=Config.NEO4J_PASSWORD,
+    database=Config.NEO4J_DATABASE
 )
+
+print(f"[OK] Connected to Neo4j at {Config.NEO4J_URI}")
+

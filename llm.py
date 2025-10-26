@@ -1,23 +1,19 @@
-import os
-from dotenv import load_dotenv
+"""
+LLM Initialization for HVAC GraphRAG System
+Uses OpenAI GPT-4 for Cypher generation and reasoning
+"""
+from langchain_openai import ChatOpenAI, OpenAIEmbeddings
+from config import Config
 
-# Load environment variables from .env file
-load_dotenv()
-
-openai_api_key = os.getenv('OPENAI_API_KEY')
-openai_model = os.getenv('OPENAI_MODEL')
-
-# Create the LLM
-from langchain_openai import ChatOpenAI
-
+# Initialize LLM
 llm = ChatOpenAI(
-    openai_api_key=openai_api_key,
-    model=openai_model,
+    model=Config.OPENAI_MODEL,
+    temperature=0.0,  # Deterministic for Cypher generation
+    api_key=Config.OPENAI_API_KEY
 )
 
-# Create the Embedding model
-from langchain_openai import OpenAIEmbeddings
-
+# Initialize embedding model
 embeddings = OpenAIEmbeddings(
-    openai_api_key=openai_api_key
+    model=Config.OPENAI_EMBEDDING_MODEL,
+    api_key=Config.OPENAI_API_KEY
 )

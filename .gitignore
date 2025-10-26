@@ -1,4 +1,4 @@
-# Environment variables
+# Environment Variables
 .env
 
 # Python
@@ -7,9 +7,6 @@ __pycache__/
 *$py.class
 *.so
 .Python
-venv/
-ENV/
-env/
 build/
 develop-eggs/
 dist/
@@ -22,9 +19,18 @@ parts/
 sdist/
 var/
 wheels/
+pip-wheel-metadata/
+share/python-wheels/
 *.egg-info/
 .installed.cfg
 *.egg
+MANIFEST
+
+# Virtual Environment
+venv/
+ENV/
+env/
+.venv
 
 # IDE
 .vscode/
@@ -33,12 +39,27 @@ wheels/
 *.swo
 *~
 
+# Jupyter Notebook
+.ipynb_checkpoints
+
+# Logs
+*.log
+hvac_graphrag.log
+
 # OS
 .DS_Store
 Thumbs.db
 
-# Streamlit
-.streamlit/secrets.toml
+# PDF files (optional - uncomment if you don't want to track PDFs)
+# *.pdf
 
-# Logs
-*.log
+# Neo4j
+.neo4j/
+
+# Testing
+.pytest_cache/
+.coverage
+htmlcov/
+
+# Streamlit
+.streamlit/

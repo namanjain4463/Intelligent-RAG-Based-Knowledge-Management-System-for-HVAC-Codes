@@ -1,14 +1,39 @@
-# HVAC Knowledge Graph System - Requirements
+# Neo4j GraphRAG HVAC Codes - Relaxed Version Constraints
+# Uses >= to allow pip to resolve compatible versions automatically
 
-## Python Dependencies
+# Core Database
 neo4j>=5.14.0
-PyMuPDF>=1.23.0
-langchain>=0.1.0
-langchain-neo4j>=0.1.0
-langchain-openai>=0.0.5
-streamlit>=1.29.0
-openai>=1.6.0
+neo4j-graphrag>=1.10.0
 python-dotenv>=1.0.0
 
-## Optional (for advanced features)
+# LangChain Stack (relaxed constraints)
+langchain>=0.2.0
+langchain-community>=0.2.0
+langchain-openai>=0.1.0
+langchain-core>=0.2.0
+
+# OpenAI
+openai>=1.40.0
+
+# PDF Processing
+PyMuPDF>=1.24.0
+
+# NLP
 spacy>=3.7.0
+# After install, run: python -m spacy download en_core_web_sm
+
+# Text Processing
+regex>=2024.0.0
+
+# Vector/Array Operations
+numpy>=2.0.0
+
+# Web Framework
+streamlit>=1.38.0
+
+# Utilities
+tqdm>=4.66.0
+pydantic>=2.0.0,<3.0.0
+
+# Logging
+loguru>=0.7.0
