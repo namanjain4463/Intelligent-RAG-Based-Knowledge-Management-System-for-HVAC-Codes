@@ -9,7 +9,6 @@ from llm import llm, embeddings
 from graph import graph
 from cypher_generator import generate_cypher, execute_cypher, extract_entities
 from config import Config
-from logging_config import logger
 
 # ==================== TOOL 1: Vector Search ====================
 
@@ -27,7 +26,6 @@ def vector_search(query: str) -> str:
     Returns: Relevant text chunks with section references
     """
     try:
-        logger.info(f"Vector search for query: {query[:100]}...")
         
         # Check if vector index exists
         index_check = graph.query("SHOW INDEXES")
@@ -37,7 +35,6 @@ def vector_search(query: str) -> str:
         )
         
         if not vector_index_exists:
-            logger.warning("Vector index not found - cannot perform semantic search")
             return "Vector search unavailable: index not found. Try using CypherQuery for structured domain questions."
         
         # Generate embedding for query
@@ -63,7 +60,6 @@ def vector_search(query: str) -> str:
         })
         
         if results:
-            logger.info(f"Vector search found {len(results)} results")
             formatted = []
             for r in results:
                 formatted.append(
@@ -71,11 +67,9 @@ def vector_search(query: str) -> str:
                 )
             return "\n\n".join(formatted)
         else:
-            logger.warning("Vector search returned no results")
             return "No relevant content found via vector search."
             
     except Exception as e:
-        logger.error(f"Vector search error: {e}", exc_info=True)
         return f"Vector search error: {str(e)}"
 
 
@@ -96,11 +90,9 @@ def cypher_query(query: str) -> str:
     All domain relationships include section references (code_ref property) for traceability.
     """
     try:
-        logger.info(f"Cypher search for query: {query[:100]}...")
         
         # Generate Cypher from natural language
         cypher = generate_cypher(query)
-        logger.debug(f"Generated Cypher: {cypher[:200]}...")
         
         # AUTO-FIX: Ensure code_ref is included in RETURN clause for relationship queries
         if any(rel in cypher for rel in ['PROHIBITED_IN', 'REQUIRES_CLEARANCE', 'MUST_COMPLY_WITH', 
@@ -111,7 +103,6 @@ def cypher_query(query: str) -> str:
                 if 'RETURN ' in cypher:
                     # Find the RETURN clause and add r.code_ref
                     cypher = cypher.replace('RETURN ', 'RETURN r.code_ref as section, ')
-                    logger.info("Auto-added 'r.code_ref as section' to RETURN clause")
         
         # Execute Cypher
         result = execute_cypher(cypher)
@@ -120,8 +111,6 @@ def cypher_query(query: str) -> str:
             # Format results with emphasis on section references
             if result["results"]:
                 result_count = len(result['results'])
-                logger.info(f"Cypher search returned {result_count} results")
-                logger.debug(f"First result: {result['results'][0] if result_count > 0 else 'None'}")
                 
                 # Format results to highlight section numbers
                 formatted_results = str(result['results'])
@@ -133,7 +122,6 @@ def cypher_query(query: str) -> str:
                 
                 return f"Query: {cypher}\n\nResults:\n{formatted_results}{section_note}"
             else:
-                logger.warning("Cypher query returned no results")
                 
                 # Check if this might be a section from another code (900 series)
                 section_match = re.search(r'\b([89]\d{2}(?:\.\d+)*)\b', query)
@@ -148,11 +136,9 @@ def cypher_query(query: str) -> str:
                 
                 return f"Query executed successfully but returned no results.\nCypher: {cypher}{helpful_note}"
         else:
-            logger.error(f"Cypher execution failed: {result['error']}")
             return f"Cypher execution error: {result['error']}\nGenerated query: {cypher}"
     
     except Exception as e:
-        logger.error(f"Cypher query error: {e}", exc_info=True)
         return f"Cypher query error: {str(e)}"
 
 # ==================== TOOL 3: Hybrid Search ====================
@@ -169,22 +155,17 @@ def hybrid_search(query: str) -> str:
     Strategy: First gets structured relationships via Cypher, then enriches with semantic text via Vector.
     """
     try:
-        logger.info(f"Hybrid search for query: {query[:100]}...")
         
         # Get vector results
-        logger.debug("Running vector search...")
         vector_results = vector_search(query)
         
         # Get Cypher results
-        logger.debug("Running Cypher query...")
         cypher_results = cypher_query(query)
         
         # Combine
-        logger.info("Hybrid search completed successfully")
         return f"=== SEMANTIC SEARCH ===\n{vector_results}\n\n=== GRAPH QUERY ===\n{cypher_results}"
     
     except Exception as e:
-        logger.error(f"Hybrid search error: {e}", exc_info=True)
         return f"Hybrid search error: {str(e)}"
 
 # ==================== TOOL DEFINITIONS ====================
