@@ -837,9 +837,7 @@ Coverage:
 ## 📚 Additional Documentation
 
 - **[TECHNICAL_ARCHITECTURE.md](TECHNICAL_ARCHITECTURE.md)** - Complete system architecture, component details, data flow diagrams, and implementation guide
-- **[QUERY_REFERENCE.md](QUERY_REFERENCE.md)** - Comprehensive query guide with 40+ examples, performance ratings, and best practices
 - **[TECHNICAL_ROADMAP.md](TECHNICAL_ROADMAP.md)** - Development approach, AI techniques, and system workflow diagrams
-- **[GRAPH_MODELING_ANALYSIS.md](GRAPH_MODELING_ANALYSIS.md)** - Graph data modeling analysis against Neo4j best practices
 
 ---
 
