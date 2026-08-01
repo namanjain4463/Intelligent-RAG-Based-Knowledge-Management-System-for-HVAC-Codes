@@ -1,6 +1,6 @@
 # HVAC GraphRAG Knowledge Assistant
 
-**A Graph Retrieval-Augmented Generation (GraphRAG) system for querying HVAC building codes using Neo4j knowledge graph, LangChang ReAct agents, and OpenAI GPT-4.**
+**A Graph Retrieval-Augmented Generation (GraphRAG) system for querying HVAC building codes using Neo4j knowledge graph, LangChain ReAct agents, and OpenAI GPT-4.**
 
 This system extracts HVAC code sections from PDF documents, builds a structured knowledge graph in Neo4j, and provides an intelligent chatbot interface powered by a 3-tool AI agent to answer questions about HVAC installation requirements, equipment prohibitions, clearance specifications, and code compliance with section-referenced answers.
 
