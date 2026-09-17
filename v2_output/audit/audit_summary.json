@@ -1,0 +1,165 @@
+{
+  "source": {
+    "file": "C:\\Users\\Naman\\Desktop\\Georgia_Tech\\Academics\\Fall_2025\\ME_4853_JAJ\\final_ai\\HVAC-Codes.pdf",
+    "pages": 306,
+    "top_level_section_heading_occurrences": 70,
+    "numbered_subsection_heading_occurrences": 827,
+    "section_heading_occurrences": 897,
+    "unique_table_caption_numbers": 30,
+    "table_caption_occurrences": 30,
+    "equation_identifier_occurrences": 27,
+    "unique_equation_identifiers": 15,
+    "exception_block_occurrences": 125,
+    "explicit_reference_occurrences": 861,
+    "explicit_reference_unique_keys": 748
+  },
+  "output": {
+    "chapters": 8,
+    "sections": 898,
+    "tables": 34,
+    "canonical_numbered_tables": 30,
+    "table_fragments": 56,
+    "table_rows": 543,
+    "references": 1568,
+    "equations": 15,
+    "unparsed_blocks": 156,
+    "failures": 202
+  },
+  "coverage": {
+    "section_heading_recall": 1.0,
+    "table_caption_recall": 1.0,
+    "equation_identifier_recall": 1.0,
+    "reference_occurrence_match_rate": 1.0,
+    "reference_duplicate_output_rate": 0.019744483159117306,
+    "exception_block_match_rate": 1.0,
+    "meaningful_source_text_line_coverage": 0.7953024911032028,
+    "source_pages_with_structural_output": 289,
+    "source_page_coverage": 0.9444444444444444,
+    "duplicate_object_count": 17,
+    "split_object_count": 0,
+    "stitched_multi_page_table_count": 8,
+    "ambiguous_object_count": 0,
+    "unmatched_content_record_count": 1594
+  },
+  "status_counts": {
+    "sections": {
+      "matched": 870,
+      "title_mismatch": 27,
+      "output_only": 1
+    },
+    "tables": {
+      "matched": 22,
+      "matched_multi_page_canonical": 8
+    },
+    "equations": {
+      "matched": 15
+    },
+    "references": {
+      "matched": 844,
+      "duplicate_output": 17,
+      "output_only": 820
+    }
+  },
+  "exceptions": {
+    "source_blocks": 125,
+    "output_exception_blocks": 125,
+    "matched_blocks": 125
+  },
+  "content_accounting": {
+    "meaningful_source_lines": 7025,
+    "matched_source_lines": 5587
+  },
+  "failures_by_code": {
+    "UNASSIGNED_CONTENT": 9,
+    "UNPARSED_BLOCK": 21,
+    "MISSING_PROVENANCE": 28,
+    "UNMATCHED_DOCLING_EXCEPTION": 39,
+    "MIXED_SOURCE_BLOCK": 96,
+    "DOCLING_STRUCTURAL_WARNING": 9
+  },
+  "failures_by_severity": {
+    "warning": 174,
+    "error": 28
+  },
+  "source_inventory_method": "Independent PyMuPDF page text plus line font-size/style and deterministic regex patterns; Docling output is used only for the compared output side.",
+  "provenance_reconciliation": {
+    "status": "PASS",
+    "heading_provenance": {
+      "section_source_headings": 897,
+      "section_linked_headings": 897,
+      "chapter_source_headings": 8,
+      "chapter_linked_headings": 8,
+      "coverage": 1.0
+    },
+    "legacy_heading_provenance": {
+      "section_source_headings": 584,
+      "section_linked_headings": 584,
+      "chapter_source_headings": 8,
+      "chapter_linked_headings": 8,
+      "source_heading_count": 592,
+      "coverage": 1.0
+    },
+    "equation_provenance": {
+      "source_occurrences": 27,
+      "linked_occurrences": 27,
+      "unique_source_identifiers": 15,
+      "unique_linked_identifiers": 15,
+      "coverage": 1.0
+    },
+    "normative_prose_token_coverage": 1.0,
+    "normative_existing_object_token_coverage": 0.6843724121613628,
+    "normative_source_token_count": 8453,
+    "normative_matched_token_count": 5785,
+    "preserved_unparsed_normative_token_count": 2668,
+    "table_cell_token_coverage": 0.9572029040886512,
+    "table_cell_source_token_count": 2617,
+    "table_cell_matched_token_count": 2505,
+    "table_cell_preserved_unparsed_token_count": 112,
+    "table_cell_accounted_coverage": 1.0,
+    "unassigned_table_cell_tokens": 0,
+    "table_footnote_coverage": 0.8633540372670807,
+    "table_footnote_source_token_count": 322,
+    "table_footnote_matched_token_count": 278,
+    "table_footnote_preserved_unparsed_token_count": 44,
+    "table_footnote_accounted_coverage": 1.0,
+    "unassigned_table_footnote_tokens": 0,
+    "table_fragment_count": 56,
+    "unmatched_normative_spans": 0,
+    "normative_span_count": 399,
+    "unassigned_normative_tokens": 0,
+    "silent_drop_count": 0,
+    "missing_primary_assignment_ids": [],
+    "original_643_candidate_lines": 643,
+    "original_643_breakdown": {
+      "existing-object alignment failures": {
+        "count": 446,
+        "percent": 69.362364
+      },
+      "table representation differences": {
+        "count": 1,
+        "percent": 0.155521
+      },
+      "list-marker representation differences": {
+        "count": 1,
+        "percent": 0.155521
+      },
+      "genuine parser omissions": {
+        "count": 193,
+        "percent": 30.015552
+      },
+      "false audit classifications": {
+        "count": 2,
+        "percent": 0.311042
+      }
+    },
+    "resolved_extra_list_markers": 7,
+    "resolved_extra_list_marker_target_count": 7,
+    "canonical_target_count": 7823,
+    "preservation_target_count": 188,
+    "preservation_record_count": 215,
+    "original_643_breakdown_sum": 643,
+    "original_643_breakdown_sum_check": true,
+    "preservation_record_path": "C:\\Users\\Naman\\Desktop\\Georgia_Tech\\Academics\\Fall_2025\\ME_4853_JAJ\\final_ai\\v2_output\\audit\\reconciliation_unparsed_blocks.json",
+    "unparsed_preservation_is_explicit": true
+  }
+}

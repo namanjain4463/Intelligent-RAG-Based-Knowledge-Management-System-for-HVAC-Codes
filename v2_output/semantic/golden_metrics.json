@@ -1,0 +1,409 @@
+{
+  "gold_case_count": 50,
+  "predicate_recall": 1.0,
+  "value_recall": 0.9,
+  "reference_recall": 1.0,
+  "section_recall": 1.0,
+  "case_results": [
+    {
+      "gold_id": "gold:25:semantic-span:aaff26bd3a89f50ecdca:section_303_3_prohibition",
+      "predicate_hit": true,
+      "value_hit": true,
+      "reference_hit": true,
+      "section_hit": true,
+      "production_count": 1
+    },
+    {
+      "gold_id": "gold:29:semantic-span:ddc1db216867f2405380:chapter_4_ventilation_maximum",
+      "predicate_hit": true,
+      "value_hit": true,
+      "reference_hit": true,
+      "section_hit": true,
+      "production_count": 1
+    },
+    {
+      "gold_id": "gold:11:semantic-span:8e2153e3b19fc488bfe8:prohibition",
+      "predicate_hit": true,
+      "value_hit": true,
+      "reference_hit": true,
+      "section_hit": true,
+      "production_count": 3
+    },
+    {
+      "gold_id": "gold:10:semantic-span:82eedf909508954ba151:permission",
+      "predicate_hit": true,
+      "value_hit": true,
+      "reference_hit": true,
+      "section_hit": true,
+      "production_count": 1
+    },
+    {
+      "gold_id": "gold:9:semantic-span:e0421826ab9f380f4233:mandatory",
+      "predicate_hit": true,
+      "value_hit": true,
+      "reference_hit": true,
+      "section_hit": true,
+      "production_count": 1
+    },
+    {
+      "gold_id": "gold:7:semantic-span:666b7ae34f4440d4236e:minimum",
+      "predicate_hit": true,
+      "value_hit": false,
+      "reference_hit": true,
+      "section_hit": true,
+      "production_count": 1
+    },
+    {
+      "gold_id": "gold:7:semantic-span:84ac0e7f94349b517f60:maximum",
+      "predicate_hit": true,
+      "value_hit": false,
+      "reference_hit": true,
+      "section_hit": true,
+      "production_count": 2
+    },
+    {
+      "gold_id": "gold:9:semantic-span:07a77887fade15bad674:clearance",
+      "predicate_hit": true,
+      "value_hit": true,
+      "reference_hit": true,
+      "section_hit": true,
+      "production_count": 7
+    },
+    {
+      "gold_id": "gold:6:semantic-span:3bf4766b270bb89283e5:device",
+      "predicate_hit": true,
+      "value_hit": true,
+      "reference_hit": true,
+      "section_hit": true,
+      "production_count": 1
+    },
+    {
+      "gold_id": "gold:10:semantic-span:0eebec345c71c6fc57fe:compliance",
+      "predicate_hit": true,
+      "value_hit": true,
+      "reference_hit": true,
+      "section_hit": true,
+      "production_count": 1
+    },
+    {
+      "gold_id": "gold:17:semantic-span:eeda81a43669f3d2d567:section_reference",
+      "predicate_hit": true,
+      "value_hit": true,
+      "reference_hit": true,
+      "section_hit": true,
+      "production_count": 1
+    },
+    {
+      "gold_id": "gold:15:semantic-span:461f73e301a01cb6cedb:table_reference",
+      "predicate_hit": true,
+      "value_hit": true,
+      "reference_hit": true,
+      "section_hit": true,
+      "production_count": 12
+    },
+    {
+      "gold_id": "gold:17:semantic-span:02c57934a3ad74d54038:chapter_reference",
+      "predicate_hit": true,
+      "value_hit": true,
+      "reference_hit": true,
+      "section_hit": true,
+      "production_count": 1
+    },
+    {
+      "gold_id": "gold:18:semantic-span:eed5a58fb02dbc05d86f:equation_reference",
+      "predicate_hit": true,
+      "value_hit": true,
+      "reference_hit": true,
+      "section_hit": true,
+      "production_count": 1
+    },
+    {
+      "gold_id": "gold:27:semantic-span:a387a998b6cdec2b9377:external_standard_reference",
+      "predicate_hit": true,
+      "value_hit": true,
+      "reference_hit": true,
+      "section_hit": true,
+      "production_count": 1
+    },
+    {
+      "gold_id": "gold:10:semantic-span:e9e935beb2542b4f5ea7:diverse_16",
+      "predicate_hit": true,
+      "value_hit": true,
+      "reference_hit": true,
+      "section_hit": true,
+      "production_count": 1
+    },
+    {
+      "gold_id": "gold:10:semantic-span:b9844b91ea6ff472196a:diverse_17",
+      "predicate_hit": true,
+      "value_hit": true,
+      "reference_hit": true,
+      "section_hit": true,
+      "production_count": 3
+    },
+    {
+      "gold_id": "gold:10:semantic-span:acb01b21544e44754fbb:diverse_18",
+      "predicate_hit": true,
+      "value_hit": true,
+      "reference_hit": true,
+      "section_hit": true,
+      "production_count": 1
+    },
+    {
+      "gold_id": "gold:10:semantic-span:fe34cd97be876606c011:diverse_19",
+      "predicate_hit": true,
+      "value_hit": true,
+      "reference_hit": true,
+      "section_hit": true,
+      "production_count": 2
+    },
+    {
+      "gold_id": "gold:10:semantic-span:21625b38ad851d0b7e3f:diverse_20",
+      "predicate_hit": true,
+      "value_hit": true,
+      "reference_hit": true,
+      "section_hit": true,
+      "production_count": 1
+    },
+    {
+      "gold_id": "gold:10:semantic-span:f3e20115fb7b8df9d6ce:diverse_21",
+      "predicate_hit": true,
+      "value_hit": true,
+      "reference_hit": true,
+      "section_hit": true,
+      "production_count": 3
+    },
+    {
+      "gold_id": "gold:10:semantic-span:30184824cc448c5e0dde:diverse_22",
+      "predicate_hit": true,
+      "value_hit": true,
+      "reference_hit": true,
+      "section_hit": true,
+      "production_count": 2
+    },
+    {
+      "gold_id": "gold:10:semantic-span:b6e38dba21d5b5a2b1fa:diverse_23",
+      "predicate_hit": true,
+      "value_hit": true,
+      "reference_hit": true,
+      "section_hit": true,
+      "production_count": 2
+    },
+    {
+      "gold_id": "gold:10:semantic-span:40739ca32ed69c23216d:diverse_24",
+      "predicate_hit": true,
+      "value_hit": true,
+      "reference_hit": true,
+      "section_hit": true,
+      "production_count": 2
+    },
+    {
+      "gold_id": "gold:10:semantic-span:a109e0d14dd6a8af18bf:diverse_25",
+      "predicate_hit": true,
+      "value_hit": true,
+      "reference_hit": true,
+      "section_hit": true,
+      "production_count": 1
+    },
+    {
+      "gold_id": "gold:10:semantic-span:a2fe6fb33a9a7725f96d:diverse_26",
+      "predicate_hit": true,
+      "value_hit": true,
+      "reference_hit": true,
+      "section_hit": true,
+      "production_count": 1
+    },
+    {
+      "gold_id": "gold:10:semantic-span:404f7f3f7f7de6bbf250:diverse_27",
+      "predicate_hit": true,
+      "value_hit": true,
+      "reference_hit": true,
+      "section_hit": true,
+      "production_count": 1
+    },
+    {
+      "gold_id": "gold:10:semantic-span:63cd2f0440289cc8b9e1:diverse_28",
+      "predicate_hit": true,
+      "value_hit": true,
+      "reference_hit": true,
+      "section_hit": true,
+      "production_count": 1
+    },
+    {
+      "gold_id": "gold:10:semantic-span:f6720e86e303b960369a:diverse_29",
+      "predicate_hit": true,
+      "value_hit": true,
+      "reference_hit": true,
+      "section_hit": true,
+      "production_count": 1
+    },
+    {
+      "gold_id": "gold:10:semantic-span:47ff2fdc4fe33d7e6325:diverse_30",
+      "predicate_hit": true,
+      "value_hit": true,
+      "reference_hit": true,
+      "section_hit": true,
+      "production_count": 5
+    },
+    {
+      "gold_id": "gold:10:semantic-span:6409b43a045e902b1e34:diverse_31",
+      "predicate_hit": true,
+      "value_hit": true,
+      "reference_hit": true,
+      "section_hit": true,
+      "production_count": 1
+    },
+    {
+      "gold_id": "gold:10:semantic-span:1c2b463602f59b3c0ca2:diverse_32",
+      "predicate_hit": true,
+      "value_hit": true,
+      "reference_hit": true,
+      "section_hit": true,
+      "production_count": 2
+    },
+    {
+      "gold_id": "gold:10:semantic-span:41ac0bd3da0d8249541c:diverse_33",
+      "predicate_hit": true,
+      "value_hit": true,
+      "reference_hit": true,
+      "section_hit": true,
+      "production_count": 1
+    },
+    {
+      "gold_id": "gold:10:semantic-span:41b0aaea4cb11509d984:diverse_34",
+      "predicate_hit": true,
+      "value_hit": true,
+      "reference_hit": true,
+      "section_hit": true,
+      "production_count": 1
+    },
+    {
+      "gold_id": "gold:10:semantic-span:53d57869d94e6699b277:diverse_35",
+      "predicate_hit": true,
+      "value_hit": true,
+      "reference_hit": true,
+      "section_hit": true,
+      "production_count": 5
+    },
+    {
+      "gold_id": "gold:10:semantic-span:30e9fca7bd5d05a701ef:diverse_36",
+      "predicate_hit": true,
+      "value_hit": true,
+      "reference_hit": true,
+      "section_hit": true,
+      "production_count": 2
+    },
+    {
+      "gold_id": "gold:10:semantic-span:fc814855c8aa1500a796:diverse_37",
+      "predicate_hit": true,
+      "value_hit": false,
+      "reference_hit": true,
+      "section_hit": true,
+      "production_count": 5
+    },
+    {
+      "gold_id": "gold:10:semantic-span:f4810325e764b7ff382f:diverse_38",
+      "predicate_hit": true,
+      "value_hit": true,
+      "reference_hit": true,
+      "section_hit": true,
+      "production_count": 1
+    },
+    {
+      "gold_id": "gold:10:semantic-span:01e831c1fec824e81e4a:diverse_39",
+      "predicate_hit": true,
+      "value_hit": true,
+      "reference_hit": true,
+      "section_hit": true,
+      "production_count": 10
+    },
+    {
+      "gold_id": "gold:10:semantic-span:81d1d31db3c31dea0724:diverse_40",
+      "predicate_hit": true,
+      "value_hit": true,
+      "reference_hit": true,
+      "section_hit": true,
+      "production_count": 1
+    },
+    {
+      "gold_id": "gold:10:semantic-span:b5883159da9898c542d3:diverse_41",
+      "predicate_hit": true,
+      "value_hit": true,
+      "reference_hit": true,
+      "section_hit": true,
+      "production_count": 1
+    },
+    {
+      "gold_id": "gold:10:semantic-span:438cecf5bc05d4178d73:diverse_42",
+      "predicate_hit": true,
+      "value_hit": true,
+      "reference_hit": true,
+      "section_hit": true,
+      "production_count": 1
+    },
+    {
+      "gold_id": "gold:10:semantic-span:f7af9b484d1a1062ca24:diverse_43",
+      "predicate_hit": true,
+      "value_hit": true,
+      "reference_hit": true,
+      "section_hit": true,
+      "production_count": 1
+    },
+    {
+      "gold_id": "gold:10:semantic-span:be0cf0d6144b0d09e47e:diverse_44",
+      "predicate_hit": true,
+      "value_hit": true,
+      "reference_hit": true,
+      "section_hit": true,
+      "production_count": 1
+    },
+    {
+      "gold_id": "gold:10:semantic-span:b162932d77b9e3841352:diverse_45",
+      "predicate_hit": true,
+      "value_hit": true,
+      "reference_hit": true,
+      "section_hit": true,
+      "production_count": 2
+    },
+    {
+      "gold_id": "gold:10:semantic-span:7219262b5d7a6bce8ec1:diverse_46",
+      "predicate_hit": true,
+      "value_hit": true,
+      "reference_hit": true,
+      "section_hit": true,
+      "production_count": 4
+    },
+    {
+      "gold_id": "gold:10:semantic-span:b95693b61af075cd8fdf:diverse_47",
+      "predicate_hit": true,
+      "value_hit": true,
+      "reference_hit": true,
+      "section_hit": true,
+      "production_count": 1
+    },
+    {
+      "gold_id": "gold:10:semantic-span:54e2319a4bf23e242c49:diverse_48",
+      "predicate_hit": true,
+      "value_hit": false,
+      "reference_hit": true,
+      "section_hit": true,
+      "production_count": 3
+    },
+    {
+      "gold_id": "gold:10:semantic-span:b71678dfb40a0c6368ce:diverse_49",
+      "predicate_hit": true,
+      "value_hit": true,
+      "reference_hit": true,
+      "section_hit": true,
+      "production_count": 1
+    },
+    {
+      "gold_id": "gold:10:semantic-span:443b858a7830f7967a92:diverse_50",
+      "predicate_hit": true,
+      "value_hit": false,
+      "reference_hit": true,
+      "section_hit": true,
+      "production_count": 8
+    }
+  ]
+}

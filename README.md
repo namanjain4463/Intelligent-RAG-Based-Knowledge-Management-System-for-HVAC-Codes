@@ -1,5 +1,7 @@
 # HVAC GraphRAG Knowledge Assistant
 
+> This branch contains the validated v2 structural corpus and ReAct runtime. See [V2_SETUP.md](V2_SETUP.md) for the current architecture, required local data, and Streamlit setup. The older description below documents the original implementation.
+
 **A Graph Retrieval-Augmented Generation (GraphRAG) system for querying HVAC building codes using Neo4j knowledge graph, LangChain ReAct agents, and OpenAI GPT-4.**
 
 This system extracts HVAC code sections from PDF documents, builds a structured knowledge graph in Neo4j, and provides an intelligent chatbot interface powered by a 3-tool AI agent to answer questions about HVAC installation requirements, equipment prohibitions, clearance specifications, and code compliance with section-referenced answers.

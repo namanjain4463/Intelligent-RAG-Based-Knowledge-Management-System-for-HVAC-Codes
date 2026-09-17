@@ -1,0 +1,13 @@
+# Isolated v2 structural ingestion dependencies.  Install into the existing
+# repository venv; the legacy requirements.txt is intentionally unchanged.
+docling>=2.126,<3
+pymupdf>=1.26,<2
+pydantic>=2.12,<3
+pandas>=2.3,<4
+pyarrow>=22,<23
+
+# Read-only ReAct runtime dependencies. The runtime uses the official Neo4j
+# Python driver and the OpenAI Responses/embeddings APIs; it does not alter the
+# structural or semantic ingestion dependencies above.
+neo4j>=5.14,<7
+openai>=1.40,<3

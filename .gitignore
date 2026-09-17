@@ -1,5 +1,7 @@
 # Environment Variables
 .env
+.env.*
+!.env.example
 
 # Python
 __pycache__/
@@ -63,3 +65,26 @@ htmlcov/
 
 # Streamlit
 .streamlit/
+.cache/
+
+# Local data, model responses, and paid embedding caches
+v2_output/*
+!v2_output/document.json
+!v2_output/sections.parquet
+!v2_output/tables.parquet
+!v2_output/table_rows.parquet
+!v2_output/references.parquet
+!v2_output/equations.parquet
+!v2_output/failures.json
+!v2_output/semantic/
+v2_output/semantic/*
+!v2_output/semantic/requirements.parquet
+!v2_output/semantic/golden_cases.json
+!v2_output/semantic/golden_metrics.json
+!v2_output/audit/
+v2_output/audit/*
+!v2_output/audit/audit_summary.json
+!v2_output/audit/phase8b_own_section_evidence_audit.json
+!v2_output/react/
+v2_output/react/*
+!v2_output/react/phase8_final_react_benchmark_summary.md

@@ -1,0 +1,693 @@
+[
+  {
+    "gold_id": "gold:25:semantic-span:aaff26bd3a89f50ecdca:section_303_3_prohibition",
+    "label": "section_303_3_prohibition",
+    "section_id": "section:303.3",
+    "page_no": 10,
+    "input_span_id": "semantic-span:aaff26bd3a89f50ecdca",
+    "source_text": "Fuel-fired appliances shall not be located in, or obtain combustion air from, any of the following rooms or spaces: 1. Sleeping rooms. 2. Bathrooms. 3. Toilet rooms. 4. Storage closets. 5. Surgical rooms.",
+    "expected_predicate": "PROHIBITED_IN",
+    "expected_values": [
+      "1",
+      "2",
+      "3"
+    ],
+    "expected_references": [],
+    "expected_reference_type": null
+  },
+  {
+    "gold_id": "gold:29:semantic-span:ddc1db216867f2405380:chapter_4_ventilation_maximum",
+    "label": "chapter_4_ventilation_maximum",
+    "section_id": "section:403.3.1.1",
+    "page_no": 44,
+    "input_span_id": "semantic-span:ddc1db216867f2405380",
+    "source_text": "Exception: The occupant load is not required to be determined based on the estimated maximum occupant load rate indicated in Table 403.3.1.1 where approved statistical data document the accuracy of an alternative anticipated occupant density.",
+    "expected_predicate": "MAXIMUM",
+    "expected_values": [
+      "403.3",
+      "1.1 where approved statistical data document the accuracy of an alternative anticipated occupant density."
+    ],
+    "expected_references": [],
+    "expected_reference_type": null
+  },
+  {
+    "gold_id": "gold:11:semantic-span:8e2153e3b19fc488bfe8:prohibition",
+    "label": "prohibition",
+    "section_id": "section:301.12",
+    "page_no": 5,
+    "input_span_id": "semantic-span:8e2153e3b19fc488bfe8",
+    "source_text": "Fuel-fired appliances shall  be  designed  for  use  with  the  type  of  fuel  to  which  they  will  be connected and the altitude at which they are installed. Appliances that comprise parts of the building mechanical system shall not be converted for the usage of a different fuel, except where approved and converted in accordance with the manufacturer's instructions. The fuel input rate shall not be increased or decreased beyond the limit rating for the altitude at which the appliance is installed.",
+    "expected_predicate": "PROHIBITED_IN",
+    "expected_values": [],
+    "expected_references": [],
+    "expected_reference_type": null
+  },
+  {
+    "gold_id": "gold:10:semantic-span:82eedf909508954ba151:permission",
+    "label": "permission",
+    "section_id": "section:301.16",
+    "page_no": 6,
+    "input_span_id": "semantic-span:82eedf909508954ba151",
+    "source_text": "Exception: Mechanical systems, equipment and appliances are permitted to be located below the elevation required by Section 1612 of the of the International Building Code for utilities and attendant equipment provided that they are designed and installed to prevent water from entering or accumulating within the components and to resist hydrostatic and hydrodynamic loads and stresses, including the effects of buoyancy, during the occurrence of flooding up to such elevation.",
+    "expected_predicate": "PERMITTED_IN",
+    "expected_values": [
+      "161",
+      "2 of the of the International Building Code for utilities and attendant equipment provided that they are designed and installed to prevent water from entering or accumulating within the components and to resist hydrostatic and hydrodynamic loads and stresses"
+    ],
+    "expected_references": [],
+    "expected_reference_type": null
+  },
+  {
+    "gold_id": "gold:9:semantic-span:e0421826ab9f380f4233:mandatory",
+    "label": "mandatory",
+    "section_id": "section:301.4",
+    "page_no": 2,
+    "input_span_id": "semantic-span:e0421826ab9f380f4233",
+    "source_text": "Plastic pipe, fittings and components shall be third-party certified as conforming to NSF 14.",
+    "expected_predicate": "REQUIRES",
+    "expected_values": [
+      "14"
+    ],
+    "expected_references": [],
+    "expected_reference_type": null
+  },
+  {
+    "gold_id": "gold:7:semantic-span:666b7ae34f4440d4236e:minimum",
+    "label": "minimum",
+    "section_id": "section:304.4",
+    "page_no": 14,
+    "input_span_id": "semantic-span:666b7ae34f4440d4236e",
+    "source_text": "m3/s) of hydrogen for each 250 square feet (23 m2) of floor area in such spaces. The minimum",
+    "expected_predicate": "MINIMUM",
+    "expected_values": [
+      "3",
+      "250 square feet (23 m2) of floor area in such spaces. The minimum"
+    ],
+    "expected_references": [],
+    "expected_reference_type": null
+  },
+  {
+    "gold_id": "gold:7:semantic-span:84ac0e7f94349b517f60:maximum",
+    "label": "maximum",
+    "section_id": "section:304.4",
+    "page_no": 14,
+    "input_span_id": "semantic-span:84ac0e7f94349b517f60",
+    "source_text": "a maximum floor area of 850 square feet (79 m2) and shall communicate with the outdoors in",
+    "expected_predicate": "MAXIMUM",
+    "expected_values": [
+      "850 square feet (79 m2) and shall communicate with the outdoors in"
+    ],
+    "expected_references": [],
+    "expected_reference_type": null
+  },
+  {
+    "gold_id": "gold:9:semantic-span:07a77887fade15bad674:clearance",
+    "label": "clearance",
+    "section_id": "section:301.9",
+    "page_no": 4,
+    "input_span_id": "semantic-span:07a77887fade15bad674",
+    "source_text": "A permanent factory-applied nameplate(s) shall be affixed to appliances on which shall appear in legible lettering, the manufacturer's name or trademark, the model number, serial number and the seal or mark of the approved agency. A label shall include the following: 1. Electrical equipment and appliances :  Electrical  rating  in  volts,  amperes  and  motor  phase; identification  of  individual  electrical  components  in  volts,  amperes  or  watts,  motor  phase; Btu/h (W) output; and required clearances. 2. Absorption units: Hourly rating in Btu/h (W); minimum hourly rating for units having step or automatic modulating controls; type of fuel; type of refrigerant; cooling capacity in Btu/h (W); and required clearances. 3. Fuel-burning units: Hourly rating in Btu/h (W); type of fuel approved for use with the appliance ; and required clearances. 4. Electric  comfort  heating appliances :  electric  rating  in  volts,  amperes  and  phase;  Btu/h  (W) output rating; individual marking for each electrical component in amperes or watts, volts and phase; and required clearances from combustibles.",
+    "expected_predicate": "REQUIRES_CLEARANCE",
+    "expected_values": [
+      "1",
+      "2",
+      "3"
+    ],
+    "expected_references": [],
+    "expected_reference_type": null
+  },
+  {
+    "gold_id": "gold:6:semantic-span:3bf4766b270bb89283e5:device",
+    "label": "device",
+    "section_id": "section:301.3",
+    "page_no": 1,
+    "input_span_id": "semantic-span:3bf4766b270bb89283e5",
+    "source_text": "Each length of pipe and tubing and each pipe fitting utilized in a mechanical system shall bear the identification of the manufacturer.",
+    "expected_predicate": "REQUIRES_DEVICE",
+    "expected_values": [],
+    "expected_references": [],
+    "expected_reference_type": null
+  },
+  {
+    "gold_id": "gold:10:semantic-span:0eebec345c71c6fc57fe:compliance",
+    "label": "compliance",
+    "section_id": "section:301.1",
+    "page_no": 1,
+    "input_span_id": "semantic-span:0eebec345c71c6fc57fe",
+    "source_text": "This chapter shall govern the approval and installation of all equipment and appliances that comprise parts of the building mechanical systems regulated by this code in accordance with Section 101.2.",
+    "expected_predicate": "MUST_COMPLY_WITH",
+    "expected_values": [
+      "101.2"
+    ],
+    "expected_references": [],
+    "expected_reference_type": null
+  },
+  {
+    "gold_id": "gold:17:semantic-span:eeda81a43669f3d2d567:section_reference",
+    "label": "section_reference",
+    "section_id": "section:301.7",
+    "page_no": 2,
+    "input_span_id": "semantic-span:eeda81a43669f3d2d567",
+    "source_text": "Exception: Listing and labeling of equipment and appliances used for refrigeration shall be in accordance with Section 1101.2.",
+    "expected_predicate": "MUST_COMPLY_WITH",
+    "expected_values": [
+      "110",
+      "1.2"
+    ],
+    "expected_references": [
+      "Section 1101.2"
+    ],
+    "expected_reference_type": "section"
+  },
+  {
+    "gold_id": "gold:15:semantic-span:461f73e301a01cb6cedb:table_reference",
+    "label": "table_reference",
+    "section_id": "section:304.10",
+    "page_no": 17,
+    "input_span_id": "semantic-span:461f73e301a01cb6cedb",
+    "source_text": "Guards  shall  be  provided  where  various  components  that  require  service  and  roof  hatch openings are located within 10 feet (3048 mm) of a roof edge or open side of a walking surface and such edge or open side is located more than 30 inches (762 mm) above the floor, roof, or grade below. The guard shall extend not less than 30 inches (762 mm) beyond each end of components that require service and each end of the roof hatch parallel to the roof edge. The top of the guard shall be located not less than 42 inches (1067 mm) above the elevated surface adjacent to the guard. The guard shall be constructed so as to prevent the passage of a 21-inchdiameter (533 mm) sphere and shall comply with the loading requirements for guards specified in the International Building Code . Exception: Guards  are  not  required  where  fall  arrest/restraint  anchorage  connector devices that comply with ANSI/ASSP Z359.1 are installed. INSIGHTS (4) 304.12 Area served. Appliances serving different areas of a building other than where they are installed shall be permanently marked in an approved manner that uniquely identifies the appliance and the area it serves. Section 305 Piping Support 305.1 General. Mechanical system piping shall be supported in accordance with this section. 305.2 Materials. Pipe hangers and supports shall have sufficient strength to withstand all anticipated static and specified  dynamic  loading  conditions  associated  with  the  intended  use.  Pipe  hangers  and supports  that  are  in  direct  contact  with  piping  shall  be  of approved materials  that  are compatible with the piping and that will not promote galvanic action. 305.3 Structural attachment. Hangers and anchors shall be attached to the building construction in an approved manner. 305.4 Interval of support. Piping shall be supported at distances not exceeding the spacing specified in Table 305.4, or in accordance with ANSI/MSS SP-58.",
+    "expected_predicate": "MUST_COMPLY_WITH",
+    "expected_values": [
+      "10 feet (3048 mm) of a roof edge or open side of a walking surface and such edge or open side is located more than 30 inches (762 mm) above the floor",
+      "30 inches (762 mm) beyond each end of components that require service and each end of the roof hatch parallel to the roof edge. The top of the guard shall be located not less than 42 inches (1067 mm) above the elevated surface adjacent to the guard. The guard shall be constructed so as to prevent the passage of a 21-inchdiameter (533 mm) sphere and shall comply with the loading requirements for guards specified in the International Building Code . Exception",
+      "359.1 are installed. INSIGHTS (4) 304.12 Area served. Appliances serving different areas of a building other than where they are installed shall be permanently marked in an approved manner that uniquely identifies the appliance and the area it serves. Section 305 Piping Support 305.1 General. Mechanical system piping shall be supported in accordance with this section. 305.2 Materials. Pipe hangers and supports shall have sufficient strength to withstand all anticipated static and specified  dynamic  loading  conditions  associated  with  the  intended  use.  Pipe  hangers  and supports  that  are  in  direct  contact  with  piping  shall  be  of approved materials  that  are compatible with the piping and that will not promote galvanic action. 305.3 Structural attachment. Hangers and anchors shall be attached to the building construction in an approved manner. 305.4 Interval of support. Piping shall be supported at distances not exceeding the spacing specified in Table 305.4"
+    ],
+    "expected_references": [
+      "Table 305.4"
+    ],
+    "expected_reference_type": "table"
+  },
+  {
+    "gold_id": "gold:17:semantic-span:02c57934a3ad74d54038:chapter_reference",
+    "label": "chapter_reference",
+    "section_id": "section:301.15",
+    "page_no": 6,
+    "input_span_id": "semantic-span:02c57934a3ad74d54038",
+    "source_text": "Where earthquake loads are applicable in accordance with the International Building Code seismic forces in accordance with Chapter 16 of the International Building Code .",
+    "expected_predicate": "MUST_COMPLY_WITH",
+    "expected_values": [
+      "16 of the International Building Code ."
+    ],
+    "expected_references": [
+      "Chapter 16"
+    ],
+    "expected_reference_type": "chapter"
+  },
+  {
+    "gold_id": "gold:18:semantic-span:eed5a58fb02dbc05d86f:equation_reference",
+    "label": "equation_reference",
+    "section_id": "section:403.3.1.1.1.1",
+    "page_no": 49,
+    "input_span_id": "semantic-span:eed5a58fb02dbc05d86f",
+    "source_text": "The outdoor airflow rate required in the breathing zone ( Vbz ) of the occupiable space or spaces in a zone shall be determined in accordance with Equation 4-1.",
+    "expected_predicate": "MUST_COMPLY_WITH",
+    "expected_values": [
+      "4",
+      "1"
+    ],
+    "expected_references": [
+      "Equation 4-1"
+    ],
+    "expected_reference_type": "equation"
+  },
+  {
+    "gold_id": "gold:27:semantic-span:a387a998b6cdec2b9377:external_standard_reference",
+    "label": "external_standard_reference",
+    "section_id": "section:301.10",
+    "page_no": 4,
+    "input_span_id": "semantic-span:a387a998b6cdec2b9377",
+    "source_text": "Electrical wiring, controls and connections to equipment and appliances regulated by this code shall be in accordance with NFPA 70.",
+    "expected_predicate": "MUST_COMPLY_WITH",
+    "expected_values": [
+      "70"
+    ],
+    "expected_references": [
+      "NFPA 70."
+    ],
+    "expected_reference_type": "external_standard"
+  },
+  {
+    "gold_id": "gold:10:semantic-span:e9e935beb2542b4f5ea7:diverse_16",
+    "label": "diverse_16",
+    "section_id": "section:301.2",
+    "page_no": 1,
+    "input_span_id": "semantic-span:e9e935beb2542b4f5ea7",
+    "source_text": "Heating,  ventilating  and  air-conditioning  systems  of  all  structures  shall  be  designed  and installed  for  efficient  utilization  of  energy  in  accordance  with  the International  Energy Conservation Code .",
+    "expected_predicate": "MUST_COMPLY_WITH",
+    "expected_values": [],
+    "expected_references": [],
+    "expected_reference_type": null
+  },
+  {
+    "gold_id": "gold:10:semantic-span:b9844b91ea6ff472196a:diverse_17",
+    "label": "diverse_17",
+    "section_id": "section:301.5",
+    "page_no": 2,
+    "input_span_id": "semantic-span:b9844b91ea6ff472196a",
+    "source_text": "Piping, tubing and fittings shall comply with the applicable referenced standards, specifications and performance criteria of this code and shall be identified in accordance with Section 301.3.  Piping,  tubing  and  fittings  shall  either  be  tested  by  an  approved  third-party testing agency or certified by an approved third-party certification agency .",
+    "expected_predicate": "MUST_COMPLY_WITH",
+    "expected_values": [
+      "301.3"
+    ],
+    "expected_references": [],
+    "expected_reference_type": null
+  },
+  {
+    "gold_id": "gold:10:semantic-span:acb01b21544e44754fbb:diverse_18",
+    "label": "diverse_18",
+    "section_id": "section:301.6",
+    "page_no": 2,
+    "input_span_id": "semantic-span:acb01b21544e44754fbb",
+    "source_text": "The  approval  and  installation  of  fuel  gas  distribution  piping  and equipment ,  fuel  gas-fired appliances and  fuel  gas-fired appliance venting  systems  shall  be  in  accordance  with  the International Fuel Gas Code .",
+    "expected_predicate": "MUST_COMPLY_WITH",
+    "expected_values": [],
+    "expected_references": [],
+    "expected_reference_type": null
+  },
+  {
+    "gold_id": "gold:10:semantic-span:fe34cd97be876606c011:diverse_19",
+    "label": "diverse_19",
+    "section_id": "section:301.7",
+    "page_no": 2,
+    "input_span_id": "semantic-span:fe34cd97be876606c011",
+    "source_text": "Appliances regulated by this code shall be listed and labeled for the application in which they are installed and used, unless otherwise approved in accordance with Section 105. Exception: Listing and labeling of equipment and appliances used for refrigeration shall be in accordance with Section 1101.2.",
+    "expected_predicate": "MUST_COMPLY_WITH",
+    "expected_values": [
+      "105",
+      "110",
+      "1.2"
+    ],
+    "expected_references": [],
+    "expected_reference_type": null
+  },
+  {
+    "gold_id": "gold:10:semantic-span:21625b38ad851d0b7e3f:diverse_20",
+    "label": "diverse_20",
+    "section_id": "section:301.8",
+    "page_no": 2,
+    "input_span_id": "semantic-span:21625b38ad851d0b7e3f",
+    "source_text": "Labeling  shall  be  in  accordance  with  the  procedures  set  forth  in  Sections  301.8.1  through 301.8.2.3. INSIGHTS (1)",
+    "expected_predicate": "MUST_COMPLY_WITH",
+    "expected_values": [
+      "301.8",
+      "1  through 301.8.2.3. INSIGHTS (1)"
+    ],
+    "expected_references": [],
+    "expected_reference_type": null
+  },
+  {
+    "gold_id": "gold:10:semantic-span:f3e20115fb7b8df9d6ce:diverse_21",
+    "label": "diverse_21",
+    "section_id": "section:301.8.1",
+    "page_no": 3,
+    "input_span_id": "semantic-span:f3e20115fb7b8df9d6ce",
+    "source_text": "An approved agency  shall  test  a  representative  sample  of  the  mechanical equipment and appliances being  labeled to the relevant standard or standards. The approved agency shall maintain a record of all of the tests performed. The record shall provide sufficient detail to verify compliance with the test standard.",
+    "expected_predicate": "MUST_COMPLY_WITH",
+    "expected_values": [],
+    "expected_references": [],
+    "expected_reference_type": null
+  },
+  {
+    "gold_id": "gold:10:semantic-span:30184824cc448c5e0dde:diverse_22",
+    "label": "diverse_22",
+    "section_id": "section:301.8.2",
+    "page_no": 3,
+    "input_span_id": "semantic-span:30184824cc448c5e0dde",
+    "source_text": "The approved agency  shall  periodically  perform  an  inspection,  which  shall  be  in-plant  if necessary, of the mechanical equipment and appliances to  be  labeled.  The inspection shall verify  that  the  labeled  mechanical equipment and appliances are  representative  of  the mechanical equipment and appliances tested.",
+    "expected_predicate": "REQUIRES_DEVICE",
+    "expected_values": [],
+    "expected_references": [],
+    "expected_reference_type": null
+  },
+  {
+    "gold_id": "gold:10:semantic-span:b6e38dba21d5b5a2b1fa:diverse_23",
+    "label": "diverse_23",
+    "section_id": "section:301.8.2.1",
+    "page_no": 3,
+    "input_span_id": "semantic-span:b6e38dba21d5b5a2b1fa",
+    "source_text": "The agency to be approved shall be objective and competent. To confirm its objectivity, the agency shall disclose all possible conflicts of interest.",
+    "expected_predicate": "REQUIRES",
+    "expected_values": [],
+    "expected_references": [],
+    "expected_reference_type": null
+  },
+  {
+    "gold_id": "gold:10:semantic-span:40739ca32ed69c23216d:diverse_24",
+    "label": "diverse_24",
+    "section_id": "section:301.8.2.2",
+    "page_no": 3,
+    "input_span_id": "semantic-span:40739ca32ed69c23216d",
+    "source_text": "An approved agency  shall  have  adequate equipment to  perform  all  required  tests.  The equipment shall be periodically calibrated.",
+    "expected_predicate": "REQUIRES_DEVICE",
+    "expected_values": [],
+    "expected_references": [],
+    "expected_reference_type": null
+  },
+  {
+    "gold_id": "gold:10:semantic-span:a109e0d14dd6a8af18bf:diverse_25",
+    "label": "diverse_25",
+    "section_id": "section:301.8.2.3",
+    "page_no": 3,
+    "input_span_id": "semantic-span:a109e0d14dd6a8af18bf",
+    "source_text": "An approved agency shall employ experienced personnel educated in conducting, supervising and evaluating tests.",
+    "expected_predicate": "REQUIRES",
+    "expected_values": [],
+    "expected_references": [],
+    "expected_reference_type": null
+  },
+  {
+    "gold_id": "gold:10:semantic-span:a2fe6fb33a9a7725f96d:diverse_26",
+    "label": "diverse_26",
+    "section_id": "section:301.11",
+    "page_no": 5,
+    "input_span_id": "semantic-span:a2fe6fb33a9a7725f96d",
+    "source_text": "Potable water supply and building drainage system connections to equipment and appliances regulated by this code shall be in accordance with the International Plumbing Code .",
+    "expected_predicate": "MUST_COMPLY_WITH",
+    "expected_values": [],
+    "expected_references": [],
+    "expected_reference_type": null
+  },
+  {
+    "gold_id": "gold:10:semantic-span:404f7f3f7f7de6bbf250:diverse_27",
+    "label": "diverse_27",
+    "section_id": "section:301.13",
+    "page_no": 5,
+    "input_span_id": "semantic-span:404f7f3f7f7de6bbf250",
+    "source_text": "Where vibration isolation of equipment and appliances is  employed, an approved means of supplemental restraint shall be used to accomplish the support and restraint.",
+    "expected_predicate": "REQUIRES_DEVICE",
+    "expected_values": [],
+    "expected_references": [],
+    "expected_reference_type": null
+  },
+  {
+    "gold_id": "gold:10:semantic-span:63cd2f0440289cc8b9e1:diverse_28",
+    "label": "diverse_28",
+    "section_id": "section:301.14",
+    "page_no": 5,
+    "input_span_id": "semantic-span:63cd2f0440289cc8b9e1",
+    "source_text": "Defective material or parts shall be replaced or repaired in such a manner so as to preserve the original approval or listing.",
+    "expected_predicate": "REQUIRES",
+    "expected_values": [],
+    "expected_references": [],
+    "expected_reference_type": null
+  },
+  {
+    "gold_id": "gold:10:semantic-span:f6720e86e303b960369a:diverse_29",
+    "label": "diverse_29",
+    "section_id": "section:301.15",
+    "page_no": 5,
+    "input_span_id": "semantic-span:f6720e86e303b960369a",
+    "source_text": "Mechanical equipment , appliances and supports that are exposed to wind shall be designed and installed to resist the wind pressures determined in accordance with the International Building Code .",
+    "expected_predicate": "MUST_COMPLY_WITH",
+    "expected_values": [],
+    "expected_references": [],
+    "expected_reference_type": null
+  },
+  {
+    "gold_id": "gold:10:semantic-span:47ff2fdc4fe33d7e6325:diverse_30",
+    "label": "diverse_30",
+    "section_id": "section:301.15",
+    "page_no": 6,
+    "input_span_id": "semantic-span:47ff2fdc4fe33d7e6325",
+    "source_text": "[BS] 301.16 Flood hazard. For structures located in flood hazard areas, mechanical systems, equipment and appliances shall be located at or above the elevation required by Section 1612 of the International Building Code for utilities and attendant equipment . Exception: Mechanical systems, equipment and appliances are permitted to be located below the elevation required by Section 1612 of the of the International Building Code for utilities  and  attendant  equipment  provided  that  they  are  designed  and  installed  to prevent  water  from  entering  or  accumulating  within  the  components  and  to  resist hydrostatic  and  hydrodynamic  loads  and  stresses,  including  the  effects  of  buoyancy, during the occurrence of flooding up to such elevation. INSIGHTS (1) [BS] 301.16.1 Coastal high-hazard areas and coastal A zones. In coastal high-hazard areas and coastal A zones, mechanical systems and equipment shall not be mounted on or penetrate walls intended to break away under flood loads. 301.17 Rodentproofing. Buildings or structures and the walls enclosing habitable or occupiable rooms and spaces in which persons live, sleep or work, or in which feed, food or foodstuffs are stored, prepared, processed, served or sold, shall be constructed to protect against the entrance of rodents in accordance with the International Building Code . 301.18 Seismic resistance. , mechanical  system  supports,  anchorage  and  bracing  shall  be  designed  and  installed  for",
+    "expected_predicate": "PROHIBITED_IN",
+    "expected_values": [
+      "301.16 Flood hazard. For structures located in flood hazard areas",
+      "161",
+      "2 of the International Building Code for utilities and attendant equipment . Exception"
+    ],
+    "expected_references": [],
+    "expected_reference_type": null
+  },
+  {
+    "gold_id": "gold:10:semantic-span:6409b43a045e902b1e34:diverse_31",
+    "label": "diverse_31",
+    "section_id": "section:301.18",
+    "page_no": 6,
+    "input_span_id": "semantic-span:6409b43a045e902b1e34",
+    "source_text": "Where earthquake loads are applicable in accordance with the International Building Code,",
+    "expected_predicate": "MUST_COMPLY_WITH",
+    "expected_values": [],
+    "expected_references": [],
+    "expected_reference_type": null
+  },
+  {
+    "gold_id": "gold:10:semantic-span:1c2b463602f59b3c0ca2:diverse_32",
+    "label": "diverse_32",
+    "section_id": "section:302.1",
+    "page_no": 7,
+    "input_span_id": "semantic-span:1c2b463602f59b3c0ca2",
+    "source_text": "The building or  structure  shall not  be  weakened by the installation of mechanical systems. Where floors, walls, ceilings or any other portion of the building or structure are required to be altered or replaced in the process of installing or repairing any system, the building or structure shall be left in a safe structural condition in accordance with the International Building Code .",
+    "expected_predicate": "PROHIBITED_IN",
+    "expected_values": [],
+    "expected_references": [],
+    "expected_reference_type": null
+  },
+  {
+    "gold_id": "gold:10:semantic-span:41ac0bd3da0d8249541c:diverse_33",
+    "label": "diverse_33",
+    "section_id": "section:302.2",
+    "page_no": 7,
+    "input_span_id": "semantic-span:41ac0bd3da0d8249541c",
+    "source_text": "Penetrations  of  floor/ceiling  assemblies  and  assemblies  required  to  have  a  fire-resistance rating shall be protected in accordance with Chapter 7 of the International Building Code .",
+    "expected_predicate": "MUST_COMPLY_WITH",
+    "expected_values": [
+      "7 of the International Building Code ."
+    ],
+    "expected_references": [],
+    "expected_reference_type": null
+  },
+  {
+    "gold_id": "gold:10:semantic-span:41b0aaea4cb11509d984:diverse_34",
+    "label": "diverse_34",
+    "section_id": "section:302.2",
+    "page_no": 7,
+    "input_span_id": "semantic-span:41b0aaea4cb11509d984",
+    "source_text": "The cutting, notching and boring of wood framing members shall comply with Sections 302.3.1 through 302.3.4.",
+    "expected_predicate": "MUST_COMPLY_WITH",
+    "expected_values": [
+      "302.3",
+      "1 through 302.3.4."
+    ],
+    "expected_references": [],
+    "expected_reference_type": null
+  },
+  {
+    "gold_id": "gold:10:semantic-span:53d57869d94e6699b277:diverse_35",
+    "label": "diverse_35",
+    "section_id": "section:302.2",
+    "page_no": 7,
+    "input_span_id": "semantic-span:53d57869d94e6699b277",
+    "source_text": "Notches on the ends of joists shall not exceed one-fourth the joist depth. Holes bored in joists shall not be within 2 inches (51 mm) of the top or bottom of the joist, and the diameter of any such hole shall not exceed one-third the depth of the joist. Notches in the top or bottom of joists shall not exceed one-sixth the depth and shall not be located in the middle third of the span.",
+    "expected_predicate": "PROHIBITED_IN",
+    "expected_values": [
+      "2 inches (51 mm) of the top or bottom of the joist"
+    ],
+    "expected_references": [],
+    "expected_reference_type": null
+  },
+  {
+    "gold_id": "gold:10:semantic-span:30e9fca7bd5d05a701ef:diverse_36",
+    "label": "diverse_36",
+    "section_id": "section:302.2",
+    "page_no": 8,
+    "input_span_id": "semantic-span:30e9fca7bd5d05a701ef",
+    "source_text": "In exterior walls and bearing partitions, a wood stud shall not be cut or notched in excess of 25 percent of its depth. In nonbearing partitions that do not support loads other than the weight of the partition, a stud shall not be cut or notched in excess of 40 percent of its depth.",
+    "expected_predicate": "PROHIBITED_IN",
+    "expected_values": [
+      "25 percent of its depth. In nonbearing partitions that do not support loads other than the weight of the partition",
+      "40 percent of its depth."
+    ],
+    "expected_references": [],
+    "expected_reference_type": null
+  },
+  {
+    "gold_id": "gold:10:semantic-span:fc814855c8aa1500a796:diverse_37",
+    "label": "diverse_37",
+    "section_id": "section:302.2",
+    "page_no": 8,
+    "input_span_id": "semantic-span:fc814855c8aa1500a796",
+    "source_text": "The diameter of bored holes in wood studs shall not exceed 40 percent of the stud depth. The diameter  of  bored  holes  in  wood  studs  shall  not  exceed  60  percent  of  the  stud  depth  in nonbearing partitions. The diameter of bored holes in wood studs shall not exceed 60 percent of the stud depth in any wall where each stud is doubled, provided that not more than two such successive doubled studs are so bored. The edge of the bored hole shall be not closer than 5/8 inch (15.9 mm) to the edge of the stud. Bored holes shall be not located at the same section of stud as a cut or notch.",
+    "expected_predicate": "PROHIBITED_IN",
+    "expected_values": [
+      "40 percent of the stud depth. The diameter  of  bored  holes  in  wood  studs  shall  not  exceed  60  percent  of  the  stud  depth  in nonbearing partitions. The diameter of bored holes in wood studs shall not exceed 60 percent of the stud depth in any wall where each stud is doubled",
+      "5/8 inch (15.9 mm) to the edge of the stud. Bored holes shall be not located at the same section of stud as a cut or notch."
+    ],
+    "expected_references": [],
+    "expected_reference_type": null
+  },
+  {
+    "gold_id": "gold:10:semantic-span:f4810325e764b7ff382f:diverse_38",
+    "label": "diverse_38",
+    "section_id": "section:302.2",
+    "page_no": 8,
+    "input_span_id": "semantic-span:f4810325e764b7ff382f",
+    "source_text": "Cuts,  notches  and  holes  bored  in  trusses,  structural  composite  lumber,  structural  gluelaminated members and Ijoists are prohibited except where permitted by the manufacturer's recommendations or where the effects of such alterations are specifically considered in the design of the member by a registered design professional.",
+    "expected_predicate": "PROHIBITED_IN",
+    "expected_values": [],
+    "expected_references": [],
+    "expected_reference_type": null
+  },
+  {
+    "gold_id": "gold:10:semantic-span:01e831c1fec824e81e4a:diverse_39",
+    "label": "diverse_39",
+    "section_id": "section:302.2",
+    "page_no": 8,
+    "input_span_id": "semantic-span:01e831c1fec824e81e4a",
+    "source_text": "Truss members and components shall not be cut, drilled, notched, spliced or otherwise altered in  any  way  without  written  concurrence  and  approval  of  a registered  design  professional . Alterations resulting in the addition of loads to any member, such as HVAC equipment and water  heaters,  shall  not  be  permitted  without  verification  that  the  truss  is  capable  of supporting such additional loading. INSIGHTS (1) [BS] 302.5 Cutting, notching and boring in steel framing. The cutting, notching and boring of steel framing members shall comply with Sections 302.5.1 through 302.5.3. INSIGHTS (1) [BS] 302.5.1 Cutting, notching and boring holes in structural steel framing. The  cutting,  notching  and  boring  of  holes  in  structural  steel  framing  members  shall  be  as prescribed by the registered design professional . [BS] 302.5.2 Cutting, notching and boring holes in cold-formed steel framing. Flanges  and  lips  of  load-bearing  cold-formed  steel  framing  members  shall  not  be  cut  or notched. Holes in webs of load-bearing cold-formed steel framing members shall be permitted along the centerline of the web of the framing member and shall not exceed the dimensional limitations,  penetration  spacing  or  minimum  hole  edge  distance  as  prescribed  by  the registered design professional .  Cutting, notching and boring holes of steel floor/roof decking shall be as prescribed by the registered design professional . [BS] 302.5.3 Cutting, notching and boring holes in non-structural cold-formed steel wall framing. Flanges and lips of nonstructural cold-formed steel wall studs shall not be cut or notched. Holes  in  webs  of  nonstructural  cold-formed  steel  wall  studs  shall  be  permitted  along  the centerline of the web of the framing member, shall not exceed 1 1/2 inches (38 mm) in width or",
+    "expected_predicate": "PROHIBITED_IN",
+    "expected_values": [
+      "1",
+      "302.5 Cutting",
+      "302.5"
+    ],
+    "expected_references": [],
+    "expected_reference_type": null
+  },
+  {
+    "gold_id": "gold:10:semantic-span:81d1d31db3c31dea0724:diverse_40",
+    "label": "diverse_40",
+    "section_id": "section:302.2",
+    "page_no": 8,
+    "input_span_id": "semantic-span:81d1d31db3c31dea0724",
+    "source_text": "laminated members and I-joists are prohibited except where permitted by the manufacturer’s",
+    "expected_predicate": "PROHIBITED_IN",
+    "expected_values": [],
+    "expected_references": [],
+    "expected_reference_type": null
+  },
+  {
+    "gold_id": "gold:10:semantic-span:b5883159da9898c542d3:diverse_41",
+    "label": "diverse_41",
+    "section_id": "section:302.2",
+    "page_no": 10,
+    "input_span_id": "semantic-span:b5883159da9898c542d3",
+    "source_text": "4 inches (102 mm) in length, and shall not be spaced less than 24 inches (610 mm) center to center from another hole or less than 10 inches (254 mm) from the bearing end.",
+    "expected_predicate": "PROHIBITED_IN",
+    "expected_values": [
+      "4 inches (102 mm) in length",
+      "24 inches (610 mm) center to center from another hole or less than 10 inches (254 mm) from the bearing end."
+    ],
+    "expected_references": [],
+    "expected_reference_type": null
+  },
+  {
+    "gold_id": "gold:10:semantic-span:438cecf5bc05d4178d73:diverse_42",
+    "label": "diverse_42",
+    "section_id": "section:303.1",
+    "page_no": 10,
+    "input_span_id": "semantic-span:438cecf5bc05d4178d73",
+    "source_text": "Equipment and appliances shall be located as required by this section, specific requirements elsewhere in this code and the conditions of the equipment and appliance listing.",
+    "expected_predicate": "REQUIRES_DEVICE",
+    "expected_values": [],
+    "expected_references": [],
+    "expected_reference_type": null
+  },
+  {
+    "gold_id": "gold:10:semantic-span:f7af9b484d1a1062ca24:diverse_43",
+    "label": "diverse_43",
+    "section_id": "section:303.2",
+    "page_no": 10,
+    "input_span_id": "semantic-span:f7af9b484d1a1062ca24",
+    "source_text": "Appliances shall  not  be  located  in  a hazardous location unless listed and approved for  the specific installation.",
+    "expected_predicate": "PROHIBITED_IN",
+    "expected_values": [],
+    "expected_references": [],
+    "expected_reference_type": null
+  },
+  {
+    "gold_id": "gold:10:semantic-span:be0cf0d6144b0d09e47e:diverse_44",
+    "label": "diverse_44",
+    "section_id": "section:303.3",
+    "page_no": 11,
+    "input_span_id": "semantic-span:be0cf0d6144b0d09e47e",
+    "source_text": "Solid fuel-fired appliances, provided that combustion air is provided in accordance with the manufacturer’s instructions.",
+    "expected_predicate": "MUST_COMPLY_WITH",
+    "expected_values": [],
+    "expected_references": [],
+    "expected_reference_type": null
+  },
+  {
+    "gold_id": "gold:10:semantic-span:b162932d77b9e3841352:diverse_45",
+    "label": "diverse_45",
+    "section_id": "section:303.3",
+    "page_no": 11,
+    "input_span_id": "semantic-span:b162932d77b9e3841352",
+    "source_text": "Appliances installed in a dedicated enclosure in which all combustion air is taken directly from the outdoors, in accordance with Chapter 7. Access to such enclosure shall be through a solid door, weather-stripped in accordance with the exterior door air leakage requirements of the International Energy Conservation Code and equipped with an approved self-closing device.",
+    "expected_predicate": "MUST_COMPLY_WITH",
+    "expected_values": [
+      "7"
+    ],
+    "expected_references": [],
+    "expected_reference_type": null
+  },
+  {
+    "gold_id": "gold:10:semantic-span:7219262b5d7a6bce8ec1:diverse_46",
+    "label": "diverse_46",
+    "section_id": "section:303.3",
+    "page_no": 11,
+    "input_span_id": "semantic-span:7219262b5d7a6bce8ec1",
+    "source_text": "Exception: This section shall not apply to the following appliances: 1. Direct-vent appliances that obtain all combustion air directly from the outdoors. 2. Solid fuel-fired appliances, provided that combustion air is provided in accordance with the manufacturer’s instructions. 3. Appliances installed in a dedicated enclosure in which all combustion air is taken directly from the outdoors, in accordance with Chapter 7. Access to such enclosure shall be through a solid door, weather-stripped in accordance with the exterior door air leakage requirements of the International Energy Conservation Code and equipped with an approved self-closing device.",
+    "expected_predicate": "PROHIBITED_IN",
+    "expected_values": [
+      "1",
+      "2",
+      "3"
+    ],
+    "expected_references": [],
+    "expected_reference_type": null
+  },
+  {
+    "gold_id": "gold:10:semantic-span:b95693b61af075cd8fdf:diverse_47",
+    "label": "diverse_47",
+    "section_id": "section:303.3",
+    "page_no": 11,
+    "input_span_id": "semantic-span:b95693b61af075cd8fdf",
+    "source_text": "Appliances installed  in  other  than  indoor  locations  shall  be listed and labeled installation.",
+    "expected_predicate": "REQUIRES_DEVICE",
+    "expected_values": [],
+    "expected_references": [],
+    "expected_reference_type": null
+  },
+  {
+    "gold_id": "gold:10:semantic-span:54e2319a4bf23e242c49:diverse_48",
+    "label": "diverse_48",
+    "section_id": "section:303.3",
+    "page_no": 11,
+    "input_span_id": "semantic-span:54e2319a4bf23e242c49",
+    "source_text": ", provided that combustion air is provided in accordance with air is taken directly to  such  enclosure  shall  be through a solid door, weather-stripped in accordance with the exterior door air leakage and  equipped  with  an approved self-closing device. 303.4 Protection from damage. Appliances shall  not  be  installed  in  a  location  where  subject  to  mechanical  damage  unless protected by approved barriers. 303.5 Indoor locations. Furnaces and boilers installed in closets and alcoves shall be listed for such installation. INSIGHTS (1) 303.6 Outdoor locations. for  outdoor",
+    "expected_predicate": "PROHIBITED_IN",
+    "expected_values": [
+      "303.4 Protection from damage. Appliances shall  not  be  installed  in  a  location  where  subject  to  mechanical  damage  unless protected by approved barriers. 303.5 Indoor locations. Furnaces and boilers installed in closets and alcoves shall be listed for such installation. INSIGHTS (1) 303.6 Outdoor locations. for  outdoor"
+    ],
+    "expected_references": [],
+    "expected_reference_type": null
+  },
+  {
+    "gold_id": "gold:10:semantic-span:b71678dfb40a0c6368ce:diverse_49",
+    "label": "diverse_49",
+    "section_id": "section:303.6",
+    "page_no": 11,
+    "input_span_id": "semantic-span:b71678dfb40a0c6368ce",
+    "source_text": "Appliances installed in other than indoor locations shall be listed and labeled for outdoor",
+    "expected_predicate": "REQUIRES_DEVICE",
+    "expected_values": [],
+    "expected_references": [],
+    "expected_reference_type": null
+  },
+  {
+    "gold_id": "gold:10:semantic-span:443b858a7830f7967a92:diverse_50",
+    "label": "diverse_50",
+    "section_id": "section:303.7",
+    "page_no": 12,
+    "input_span_id": "semantic-span:443b858a7830f7967a92",
+    "source_text": "Appliances installed in pits or excavations shall not come in direct contact with the surrounding soil and shall be installed not less than 3 inches (76 mm) above the pit floor. The sides of the pit or excavation shall be held back not less than 12 inches (305 mm) from the appliance . Where the depth exceeds 12 inches (305 mm) below adjoining grade, the walls of the pit or excavation shall be lined with concrete or masonry. Such concrete or masonry shall extend not less than 4 inches (102 mm) above adjoining grade and shall have sufficient lateral load-bearing capacity to resist collapse. Excavation on the control side of the appliance shall extend not less than 30 inches (762 mm) horizontally. The appliance shall be protected from flooding in an approved manner.",
+    "expected_predicate": "PROHIBITED_IN",
+    "expected_values": [
+      "3 inches (76 mm) above the pit floor. The sides of the pit or excavation shall be held back not less than 12 inches (305 mm) from the appliance . Where the depth exceeds 12 inches (305 mm) below adjoining grade",
+      "4 inches (102 mm) above adjoining grade and shall have sufficient lateral load-bearing capacity to resist collapse. Excavation on the control side of the appliance shall extend not less than 30 inches (762 mm) horizontally. The appliance shall be protected from flooding in an approved manner."
+    ],
+    "expected_references": [],
+    "expected_reference_type": null
+  }
+]
