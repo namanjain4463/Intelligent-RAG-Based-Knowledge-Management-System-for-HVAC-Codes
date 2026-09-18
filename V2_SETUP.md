@@ -17,4 +17,4 @@ The committed `v2_output/document.json` is the repaired canonical structural cor
 
 Local embedding caches, query vectors, API response traces, stateless checkpoints, and expanded benchmark artifacts are intentionally ignored. The production embeddings and vector index live in Aura; the runtime generates query embeddings as needed. The original PDF remains tracked because it was already part of this repository.
 
-The current graph has `Document`, `Chapter`, `Section`, and `Requirement` nodes. Real numbered Sections are used as authoritative evidence; `section:unassigned` is excluded from production retrieval. The legacy LangChain files and the remainder of the older README describe an earlier graph and are not used by `bot.py`.
+The current graph has `Document`, `Chapter`, `Section`, and `Requirement` nodes. Real numbered Sections are used as authoritative evidence; `section:unassigned` is excluded from production retrieval. The legacy LangChain files describe an earlier graph and are not used by `bot.py`. For copyable Windows PowerShell installation and launch commands, see the current [README](README.md).
