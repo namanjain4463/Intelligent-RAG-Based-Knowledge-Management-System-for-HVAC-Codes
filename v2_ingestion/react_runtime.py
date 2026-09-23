@@ -86,9 +86,13 @@ If the gathered evidence genuinely cannot answer the question, say so explicitly
 Tool observations are compact: `new_evidence` contains complete canonical source
 blocks, while `existing_evidence` names source blocks already present in the
 conversation-wide evidence ledger. Use only those evidence IDs for citations.
-Cite every substantive regulatory statement using only supplied evidence identifiers
-such as [E1]. Never generate Section/page citations yourself. Do not use citations
-such as [Section 303.3, p. 10]. Keep the final answer concise and answer directly.
+Cite every factual or regulatory statement using only supplied evidence identifiers
+such as [E1]. This is required even for clarification answers, section inventories,
+bounded-result explanations, and statements that evidence is insufficient. Put a
+relevant evidence identifier at the end of each paragraph or list group, and never
+return a final answer without at least one [E#] citation when evidence was supplied.
+Never generate Section/page citations yourself. Do not use citations such as
+[Section 303.3, p. 10]. Keep the final answer concise and answer directly.
 """
 
 TOOL_SPECS: list[dict[str, Any]] = [
