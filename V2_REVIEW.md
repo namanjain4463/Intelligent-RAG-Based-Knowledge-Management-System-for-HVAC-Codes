@@ -51,6 +51,11 @@ relationship model describes v1 and should not be presented as the v2 schema.
    mark old architecture documents as historical, and add offline GitHub Actions
    tests scoped to pushes and pull requests targeting `v2-graphrag`.
 
+5. **Portable source provenance:** the first clean Linux CI run exposed an absolute
+   Windows source path in semantic ingestion. Resolve the PDF from the current
+   checkout and verify its recorded SHA-256 before using it. Semantic tests now
+   consume regenerated reconciliation artifacts, rather than silently omitting them.
+
 ## Highest-value next work
 
 | Priority | Improvement and implementation | Acceptance evidence |
@@ -68,8 +73,8 @@ relationship model describes v1 and should not be presented as the v2 schema.
 Local regression tests use fake model/database clients. No paid OpenAI request,
 Aura graph mutation, corpus regeneration, or live answer-quality benchmark was
 performed. The dependency file pins direct packages observed in the local Python
-3.11 environment; it is not a complete transitive lockfile. GitHub-hosted CI and a
-clean Linux install require their own run. This review did not visually exercise
+3.11 environment; it is not a complete transitive lockfile. A clean Linux CI installation succeeded; the first test run exposed the source-path
+issue described above. Consult the commit checks for the final CI result. This review did not visually exercise
 the Streamlit interface because the changes concern runtime boundaries and tests.
 
 Neo4j documents that driver read routing is not an access-control guarantee and

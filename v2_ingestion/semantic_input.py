@@ -12,7 +12,7 @@ import json
 import re
 import unicodedata
 from collections import defaultdict
-from pathlib import Path
+from pathlib import Path, PureWindowsPath
 from typing import Any, Iterable
 
 import fitz
@@ -165,6 +165,24 @@ def _record_from_block(
     return record, None
 
 
+def resolve_source_pdf(document_path: Path, document: dict[str, Any]) -> Path:
+    """Prefer the relocated corpus PDF, verifying its recorded content hash."""
+    recorded = str(document.get("source_file") or "HVAC-Codes.pdf")
+    filename = PureWindowsPath(recorded).name
+    candidates = [document_path.parent.parent / filename, Path(recorded)]
+    expected = str(document.get("source_sha256") or "").casefold()
+    for candidate in candidates:
+        if not candidate.is_file():
+            continue
+        if expected and hashlib.sha256(candidate.read_bytes()).hexdigest() != expected:
+            continue
+        return candidate
+    raise FileNotFoundError(
+        "No source PDF matching the corpus provenance was found. "
+        f"Place {filename} beside the v2_output directory."
+    )
+
+
 def build_semantic_input(
     document_path: Path,
     reconciliation_path: Path,
@@ -173,7 +191,7 @@ def build_semantic_input(
     document = json.loads(document_path.read_text(encoding="utf-8"))
     document_id = str(document.get("id") or document_path.stem)
     source_sha256 = str(document.get("source_sha256") or "")
-    pages = _load_pages(Path(document.get("source_file") or document_path.parent.parent / "HVAC-Codes.pdf"))
+    pages = _load_pages(resolve_source_pdf(document_path, document))
     sections, block_to_section, block_to_chapter = _section_maps(document)
     failures = _failure_lookup(document)
     spans: list[dict[str, Any]] = []

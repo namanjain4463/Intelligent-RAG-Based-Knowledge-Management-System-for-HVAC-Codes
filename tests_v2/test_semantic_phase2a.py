@@ -8,6 +8,7 @@ from pathlib import Path
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT))
 
+from tests_v2.audit_fixtures import provenance_output
 from v2_ingestion.semantic_evaluation import build_golden_cases, evaluate
 from v2_ingestion.semantic_extractor import extract_requirements
 from v2_ingestion.semantic_input import build_semantic_input
@@ -23,7 +24,8 @@ AUDIT = ROOT / "v2_output" / "audit"
 class SemanticPhase2ATests(unittest.TestCase):
     @classmethod
     def setUpClass(cls):
-        cls.spans, cls.input_errors, cls.input_summary = build_semantic_input(DOC, AUDIT / "provenance_reconciliation.csv", AUDIT / "reconciliation_unparsed_blocks.json")
+        audit_dir = provenance_output() / "audit"
+        cls.spans, cls.input_errors, cls.input_summary = build_semantic_input(DOC, audit_dir / "provenance_reconciliation.csv", audit_dir / "reconciliation_unparsed_blocks.json")
         cls.requirements, cls.extract_errors, cls.extract_summary = extract_requirements(cls.spans)
 
     def test_models_are_strict_and_predicate_is_closed(self):

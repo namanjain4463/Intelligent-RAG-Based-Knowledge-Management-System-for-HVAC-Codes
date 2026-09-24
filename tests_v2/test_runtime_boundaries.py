@@ -80,3 +80,25 @@ class RuntimeBoundaryTests(unittest.TestCase):
 
     def test_resume_at_tool_budget_synthesizes_without_retrieval(self):
         self.assertEqual(self.run_last_tool_scenario(interrupt=True)["status"], "ok")
+
+
+class PortableSourceTests(unittest.TestCase):
+    def test_relocated_pdf_must_match_recorded_hash(self):
+        import hashlib
+        from v2_ingestion.semantic_input import resolve_source_pdf
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            document_path = root / "v2_output" / "document.json"
+            source = root / "HVAC-Codes.pdf"
+            source.write_bytes(b"test source")
+            document = {
+                "source_file": "Z:/unavailable-original-checkout/HVAC-Codes.pdf",
+                "source_sha256": hashlib.sha256(b"test source").hexdigest(),
+            }
+            self.assertEqual(resolve_source_pdf(document_path, document), source)
+            source.write_bytes(b"different document")
+            with self.assertRaises(FileNotFoundError):
+                resolve_source_pdf(document_path, document)
+            source.unlink()
+            with self.assertRaises(FileNotFoundError):
+                resolve_source_pdf(document_path, document)
