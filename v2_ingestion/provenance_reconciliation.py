@@ -974,6 +974,18 @@ def reconcile_document(source_pdf: str | Path, document: dict[str, Any], audit_d
     metrics["original_643_breakdown_sum"] = sum(item["count"] for item in metrics["original_643_breakdown"].values())
     metrics["original_643_breakdown_sum_check"] = metrics["original_643_breakdown_sum"] == 643
 
+    # Current-corpus accounting must not use the historical 643-line denominator.
+    # Keep the legacy fields above for consumers of the original audit snapshot.
+    metrics["candidate_line_count"] = len(original_candidates)
+    metrics["candidate_breakdown"] = {
+        category: {
+            "count": count,
+            "percent": round(100.0 * count / len(original_candidates), 6) if original_candidates else 0.0,
+        }
+        for category, count in sorted(breakdown.items())
+    }
+    metrics["candidate_breakdown_sum_check"] = sum(breakdown.values()) == len(original_candidates)
+
     reconciliation_rows = [*target_rows, *heading_rows, *legacy_heading_rows, *equation_rows, *table_rows]
     _write_csv(audit_path / "provenance_reconciliation.csv", reconciliation_rows, [
         "source_id", "source_kind", "identifier", "page_no", "text", "source_bbox", "section_id",

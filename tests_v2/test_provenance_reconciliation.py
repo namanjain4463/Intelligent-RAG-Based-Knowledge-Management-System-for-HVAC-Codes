@@ -4,6 +4,7 @@ import csv
 import json
 import unittest
 from pathlib import Path
+from tests_v2.audit_fixtures import provenance_output
 
 
 REPO = Path(__file__).resolve().parents[1]
@@ -19,6 +20,9 @@ def read_csv(name: str) -> list[dict[str, str]]:
 class ProvenanceReconciliationTests(unittest.TestCase):
     @classmethod
     def setUpClass(cls) -> None:
+        global OUTPUT, AUDIT
+        OUTPUT = provenance_output()
+        AUDIT = OUTPUT / "audit"
         cls.summary = json.loads((AUDIT / "provenance_audit_summary.json").read_text(encoding="utf-8"))
         cls.document = json.loads((OUTPUT / "document.json").read_text(encoding="utf-8"))
         cls.reconciliation = read_csv("provenance_reconciliation.csv")
@@ -30,8 +34,8 @@ class ProvenanceReconciliationTests(unittest.TestCase):
 
     def test_legacy_heading_inventory_is_fully_linked(self) -> None:
         headings = self.summary["legacy_heading_provenance"]
-        self.assertEqual(headings["section_source_headings"], 584)
-        self.assertEqual(headings["section_linked_headings"], 584)
+        self.assertEqual(headings["section_source_headings"], 739)
+        self.assertEqual(headings["section_linked_headings"], 739)
         self.assertEqual(headings["chapter_source_headings"], 8)
         self.assertEqual(headings["chapter_linked_headings"], 8)
         self.assertEqual(headings["coverage"], 1.0)
@@ -52,16 +56,16 @@ class ProvenanceReconciliationTests(unittest.TestCase):
         self.assertEqual(len(self.spans), self.summary["normative_span_count"])
         self.assertTrue(all(row["target_id"] for row in self.spans))
 
-    def test_original_643_breakdown_is_exhaustive(self) -> None:
-        breakdown = self.summary["original_643_breakdown"]
-        self.assertEqual(self.summary["original_643_candidate_lines"], 643)
-        self.assertTrue(self.summary["original_643_breakdown_sum_check"])
-        self.assertEqual(sum(item["count"] for item in breakdown.values()), 643)
-        self.assertEqual(breakdown["existing-object alignment failures"]["count"], 446)
+    def test_current_candidate_breakdown_is_exhaustive(self) -> None:
+        # Regenerated from the repaired corpus, not the historical 643-line audit.
+        breakdown = self.summary["candidate_breakdown"]
+        self.assertEqual(self.summary["candidate_line_count"], 441)
+        self.assertTrue(self.summary["candidate_breakdown_sum_check"])
+        self.assertEqual(sum(item["count"] for item in breakdown.values()), 441)
+        self.assertAlmostEqual(sum(item["percent"] for item in breakdown.values()), 100.0, places=5)
+        self.assertEqual(breakdown["existing-object alignment failures"]["count"], 369)
         self.assertEqual(breakdown["table representation differences"]["count"], 1)
-        self.assertEqual(breakdown["list-marker representation differences"]["count"], 1)
-        self.assertEqual(breakdown["genuine parser omissions"]["count"], 193)
-        self.assertEqual(breakdown["false audit classifications"]["count"], 2)
+        self.assertEqual(breakdown["genuine parser omissions"]["count"], 71)
 
     def test_page_120_markers_use_layout_proximity(self) -> None:
         markers = [row for row in self.reconciliation if row["source_kind"] == "list_marker"]
@@ -73,12 +77,17 @@ class ProvenanceReconciliationTests(unittest.TestCase):
     def test_page_174_lines_are_not_navigation_exclusions(self) -> None:
         rows = [
             row for row in self.classified
-            if row["page_no"] == "174" and row["legacy_audit_category"] == "navigation_artifact"
+            if row["page_no"] == "174" and row["text"].startswith((
+                "airstream dew-point temperature.", "incorporated in air-handling systems"
+            ))
         ]
         self.assertEqual(len(rows), 2)
         self.assertTrue(all(row["category"] == "normative code text" for row in rows))
         self.assertTrue(all(row["blocker"].casefold() == "true" for row in rows))
-        self.assertTrue(all(row["legacy_audit_category"] == "navigation_artifact" for row in rows))
+        self.assertTrue(all(row["legacy_audit_category"] != "navigation_artifact" for row in rows))
+        linked = [row for row in self.reconciliation if row["page_no"] == "174" and row["source_kind"] == "normative_line"]
+        self.assertEqual(len(linked), 2)
+        self.assertTrue(all(row["target_id"] and float(row["token_coverage"]) == 1.0 for row in linked))
         self.assertFalse(any(row["page_no"] == "174" for row in self.excluded))
 
     def test_table_fragment_and_footnote_accounting_is_explicit(self) -> None:

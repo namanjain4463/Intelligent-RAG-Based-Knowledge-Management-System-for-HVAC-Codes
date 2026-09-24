@@ -13,6 +13,7 @@ from v2_ingestion.models import ListBlock
 from v2_ingestion.parser import DoclingStructuralParser
 from v2_ingestion.source_inventory import build_source_inventory
 from v2_ingestion.writer import write_outputs
+from tests_v2.audit_fixtures import audit_output
 
 
 REPO = Path(__file__).resolve().parents[1]
@@ -225,8 +226,8 @@ class SourceCoverageGoldenTests(unittest.TestCase):
         self.assertEqual(self.summary["coverage"]["table_caption_recall"], 1.0)
         self.assertEqual(self.summary["coverage"]["equation_identifier_recall"], 1.0)
         for filename in ("section_coverage.csv", "table_coverage.csv", "equation_coverage.csv", "reference_coverage.csv", "unmatched_content.csv"):
-            self.assertTrue((OUTPUT / "audit" / filename).exists())
-        with (OUTPUT / "audit" / "unmatched_content.csv").open(encoding="utf-8-sig", newline="") as handle:
+            self.assertTrue((audit_output() / "audit" / filename).exists())
+        with (audit_output() / "audit" / "unmatched_content.csv").open(encoding="utf-8-sig", newline="") as handle:
             rows = list(csv.DictReader(handle))
         self.assertTrue(any(row["status"] == "unparsed_output" for row in rows))
 

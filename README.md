@@ -29,11 +29,13 @@ You need Python, an OpenAI API key with access to `gpt-5.6-luna` and `text-embed
 From a fresh clone of this branch:
 
 ```powershell
-git clone --branch codex/v2-graphrag-release https://github.com/namanjain4463/Intelligent-RAG-Based-Knowledge-Management-System-for-HVAC-Codes.git
+git clone --branch v2-graphrag https://github.com/namanjain4463/Intelligent-RAG-Based-Knowledge-Management-System-for-HVAC-Codes.git
 cd Intelligent-RAG-Based-Knowledge-Management-System-for-HVAC-Codes
 py -3.11 -m venv venv
-.\venv\Scripts\python.exe -m pip install -r requirements.txt -r v2_requirements.txt
+.\venv\Scripts\python.exe -m pip install -r requirements-runtime.txt
 ```
+
+The runtime dependency file pins the tested direct dependencies for chat and local tests. Full PDF re-ingestion additionally requires the Docling stack in `v2_requirements.txt`; use a separate environment for that workflow.
 
 If you already have the repository's virtual environment, use that environment instead of creating or replacing it. Run the remaining commands from the repository root.
 
@@ -96,4 +98,24 @@ To run the local regression tests without querying Aura or OpenAI:
 
 The production retrieval corpus excludes review-flagged, quarantined, and `section:unassigned` Requirements. Tables and other source material are not a substitute for checking the original PDF. Answers are limited to evidence retrieved from the validated corpus and should be checked against the cited source pages before using them for design or code-compliance decisions.
 
-This branch does not rebuild the graph or vector index when the UI launches. The legacy `requirements.txt` is retained for compatibility; `v2_requirements.txt` adds dependencies for the v2 corpus and runtime. Local credentials, virtual environments, caches, logs, checkpoints, and generated benchmark outputs should stay out of Git; see `.gitignore`.
+This branch does not rebuild the graph or vector index when the UI launches. The legacy `requirements.txt` is retained for historical workflows; use `requirements-runtime.txt` for v2 chat and offline tests. Local credentials, virtual environments, caches, logs, checkpoints, and generated benchmark outputs should stay out of Git; see `.gitignore`.
+
+## Validation and next improvements
+
+The regression suite regenerates audit CSV/JSON fixtures from the committed PDF
+and corpus in a temporary directory. It does not require private audit files,
+OpenAI calls, or Aura. PDF audit regeneration may take several minutes.
+
+The saved 20-question benchmark reports 17 grounded correct answers, 18 completed
+answers, and 18 citation-valid answers. These are historical measurements, not a
+new evaluation of the current revision. Citation binding verifies evidence IDs,
+not whether every claim follows from its source.
+
+See [the v2 review and improvement plan](V2_REVIEW.md) for findings, fixes, and
+acceptance criteria. `TECHNICAL_ARCHITECTURE.md` and `TECHNICAL_ROADMAP.md` describe
+the legacy implementation and should not be used as v2 performance evidence.
+
+For deployment, provision database credentials restricted to reads. Driver read
+routing and application query validation are not database authorization. Generated
+Cypher has a literal terminal row limit, rejects UNION, and uses a 15-second
+transaction timeout; a row limit does not bound the size of an individual value.

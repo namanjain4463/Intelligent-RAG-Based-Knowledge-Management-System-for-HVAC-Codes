@@ -17,7 +17,7 @@ from typing import Any, Callable
 from uuid import uuid4
 
 import pandas as pd
-from neo4j import GraphDatabase
+from neo4j import GraphDatabase, unit_of_work
 
 from .phase6f_benchmark import (
     OUTPUT,
@@ -42,6 +42,7 @@ VECTOR_DIMENSIONS = 3072
 MAX_TOOL_CALLS = 6
 MAX_CYPHER_ROWS = 100
 MAX_VECTOR_RESULTS = 10
+QUERY_TIMEOUT_SECONDS = 15.0
 
 SECTION_NUMBER_RE = re.compile(r"^\d{3,4}(?:\.\d+)*$")
 EVIDENCE_ID_RE = re.compile(r"\[(E\d+)\]")
@@ -247,11 +248,18 @@ def validate_read_only_cypher(query: str, max_rows: int = MAX_CYPHER_ROWS) -> st
         raise ValueError(f"Read-only Cypher rejected forbidden clause(s): {', '.join(found)}")
     if not re.match(r"^\s*(MATCH|OPTIONAL|UNWIND|WITH|RETURN)\b", text, re.I):
         raise ValueError("Cypher must begin with a read-only clause")
-    limits = re.findall(r"\bLIMIT\s+(\d+)\b", text, re.I)
+    # Quoted text/identifiers cannot supply a clause. In particular, a string
+    # containing "LIMIT 1" must not make an otherwise unbounded query pass.
+    clauses = re.sub(r"'(?:(?:\\.)|[^'\\])*'|\"(?:(?:\\.)|[^\"\\])*\"|`(?:``|[^`])*`", "__quoted__", text)
+    if re.search(r"\bUNION\b", clauses, re.I):
+        raise ValueError("Cypher UNION is not permitted; use one bounded result")
+    limits = re.findall(r"\bLIMIT\s+(\d+)\b", clauses, re.I)
     if not limits:
         raise ValueError(f"Cypher must include LIMIT <= {max_rows}")
     if any(int(value) > max_rows for value in limits):
         raise ValueError(f"Cypher LIMIT cannot exceed {max_rows}")
+    if not re.search(r"\bLIMIT\s+\d+\s*;?\s*$", clauses, re.I):
+        raise ValueError("Cypher must end with a literal LIMIT, without an expression")
     return text
 
 
@@ -754,8 +762,12 @@ class AuraReadOnlyStore:
     def read_cypher(self, query: str, parameters: dict[str, Any]) -> list[dict[str, Any]]:
         safe_query = validate_read_only_cypher(query)
         _validate_parameters(parameters)
+        @unit_of_work(timeout=QUERY_TIMEOUT_SECONDS)
+        def read(tx: Any) -> list[dict[str, Any]]:
+            return [_json_safe(row) for row in tx.run(safe_query, parameters).data()]
+
         with self.driver.session(database=self.database) as session:
-            return [_json_safe(row) for row in session.execute_read(lambda tx: tx.run(safe_query, parameters).data())]
+            return session.execute_read(read)
 
     def _read_fixed(self, query: str, **parameters: Any) -> list[dict[str, Any]]:
         with self.driver.session(database=self.database) as session:
@@ -1575,7 +1587,8 @@ class ReActGraphRAG:
         trace: list[dict[str, Any]] = []
         input_items = session.input_items
 
-        while session.tool_calls < self.max_tool_calls:
+        # A completed final retrieval still needs one synthesis request.
+        while session.tool_calls <= self.max_tool_calls:
             session.turn += 1
             accounting = build_payload_accounting(question, input_items, registry)
             session.payload_accounting.append(accounting)
@@ -1584,6 +1597,8 @@ class ReActGraphRAG:
                     session.request_configuration or self._request_configuration()
                 )
                 request_configuration["input"] = input_items
+                if session.tool_calls == self.max_tool_calls:
+                    request_configuration["tool_choice"] = "none"
                 response = self._get_client().responses.create(**request_configuration)
             except Exception as exc:
                 return self._safe_failure(
@@ -1690,6 +1705,11 @@ class ReActGraphRAG:
                     "evaluation_total_input_tokens": session.evaluation_total_input_tokens,
                 }
 
+            if session.tool_calls >= self.max_tool_calls:
+                return self._safe_failure(
+                    f"Maximum ReAct tool-call limit reached ({self.max_tool_calls}); the model requested another tool.",
+                    registry, trace, session.tool_calls, session.payload_accounting, session,
+                )
             for function_call in function_calls:
                 if session.tool_calls >= self.max_tool_calls:
                     break

@@ -4,7 +4,7 @@ This branch runs the current ReAct agent through `agent.py` and the Streamlit UI
 
 ## Local prerequisites
 
-- Python virtual environment with `requirements.txt` and `v2_requirements.txt` installed. Use the existing repository virtual environment when available.
+- Python virtual environment with `requirements-runtime.txt` installed. Use the existing repository virtual environment when available.
 - OpenAI API access for `gpt-5.6-luna` and `text-embedding-3-large`.
 - A populated Neo4j Aura database with the validated v2 graph and the `hvac_passage_embeddings` vector index. This branch does not create a new Aura instance when the app starts.
 - A local `.env` copied from `.env.example`, with your own API key, Aura URI, username, password, and database name. Never commit `.env`.

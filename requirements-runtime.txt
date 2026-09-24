@@ -1,0 +1,10 @@
+# Tested direct dependencies for the v2 chat runtime and offline regression suite.
+# Full PDF conversion uses the separate v2_requirements.txt (Docling stack).
+neo4j==5.28.2
+openai==1.108.2
+streamlit==1.49.1
+python-dotenv==1.0.0
+pandas==2.3.2
+pyarrow==21.0.0
+pydantic==2.11.7
+PyMuPDF==1.26.4

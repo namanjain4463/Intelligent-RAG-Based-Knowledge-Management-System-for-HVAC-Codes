@@ -1,3 +1,5 @@
+> Historical v1 document. For the current v2 runtime, setup, and measured limitations, see [README.md](README.md) and [V2_REVIEW.md](V2_REVIEW.md). The architecture and performance claims below are not v2 validation.
+
 # 🗺️ Technical Roadmap: HVAC GraphRAG System
 
 ## Table of Contents
