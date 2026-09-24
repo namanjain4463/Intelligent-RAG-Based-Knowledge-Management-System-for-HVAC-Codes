@@ -253,7 +253,7 @@ def scroll_to_latest_message() -> None:
               const doc = window.parent.document;
               const messages = doc.querySelectorAll('[data-testid="stChatMessage"]');
               const latest = messages[messages.length - 1];
-              if (latest) latest.scrollIntoView({behavior: "smooth", block: "end"});
+              if (latest) latest.scrollIntoView({behavior: "smooth", block: "center"});
             } catch (_) { /* Streamlit may sandbox this helper; native scroll remains available. */ }
           };
           setTimeout(scroll, 0);

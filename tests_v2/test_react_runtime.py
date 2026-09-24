@@ -638,6 +638,14 @@ class ReactRuntimeSafetyTests(unittest.TestCase):
         self.assertTrue(result["citation_validation"]["not_required"])
         self.assertIn("HVAC", result["answer"])
 
+    def test_grounding_failure_has_source_aware_user_guidance(self):
+        from v2_ingestion.react_runtime import _user_facing_failure
+
+        message = _user_facing_failure("Final citation binding failed; no evidence was available.")
+        self.assertIn("supplied HVAC code corpus", message)
+        self.assertIn("I won’t guess", message)
+        self.assertNotIn("couldn’t safely connect", message)
+
 
 if __name__ == "__main__":
     unittest.main()

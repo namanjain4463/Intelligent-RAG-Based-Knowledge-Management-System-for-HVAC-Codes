@@ -1770,8 +1770,10 @@ def _user_facing_failure(message: str) -> str:
         return "I’m sorry, I can’t reach the HVAC code knowledge graph right now. Please try again in a moment."
     if "citation" in lowered or "evidence" in lowered or "grounded" in lowered:
         return (
-            "I’m sorry, I couldn’t safely connect that answer to the HVAC code source. "
-            "Please try a specific section number or a narrower code question."
+            "I’m focused on the supplied HVAC code corpus, but I couldn’t find a "
+            "source-backed answer for that request, so I won’t guess. Try a complete "
+            "section number or ask about a specific HVAC requirement, condition, "
+            "exception, or prohibition."
         )
     if "responses api" in lowered or "openai" in lowered:
         return "I’m sorry, the answer service could not complete that request. Please try again shortly."
