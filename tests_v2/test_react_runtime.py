@@ -8,7 +8,6 @@ from v2_ingestion.react_runtime import (
     build_payload_accounting,
     CanonicalEvidenceAssembler,
     compact_tool_observation,
-    conversational_response,
     EvidenceRegistry,
     ReActGraphRAG,
     serialize_function_call_output_for_resume,
@@ -19,16 +18,6 @@ from v2_ingestion.react_runtime import (
 
 
 class ReactRuntimeSafetyTests(unittest.TestCase):
-    def test_conversational_capability_question_is_answered_without_retrieval(self):
-        answer = conversational_response("hi, what is your name and what all can you do?")
-        self.assertIsNotNone(answer)
-        self.assertIn("HVAC Codes Assistant", answer)
-        self.assertIn("specific sections and subsections", answer)
-        self.assertIn("conditions, and exceptions", answer)
-
-    def test_regulatory_question_is_not_captured_by_conversational_path(self):
-        self.assertIsNone(conversational_response("What does Section 303.3 prohibit?"))
-
     def test_exactly_three_runtime_tools_are_exposed(self):
         self.assertEqual(
             [tool["name"] for tool in TOOL_SPECS],
@@ -580,6 +569,60 @@ class ReactRuntimeSafetyTests(unittest.TestCase):
         self.assertIsNone(second.previous_response_id)
         self.assertNotIn("Q1", json.dumps(second.input_items))
         self.assertNotIn("q1-call", json.dumps(second.input_items))
+
+    def test_conversation_memory_is_copied_without_react_state(self):
+        runtime = ReActGraphRAG()
+        session = runtime.start_session(
+            "Does that exception apply here?",
+            question_id="follow-up",
+            conversation_history=[
+                {"role": "user", "content": "What does Section 303.3 prohibit?"},
+                {"role": "assistant", "content": "It identifies prohibited locations. [Section 303.3, p. 10]"},
+                {"role": "function_call", "content": "must not be copied"},
+            ],
+        )
+        self.assertEqual(
+            session.input_items,
+            [
+                {"role": "user", "content": "What does Section 303.3 prohibit?"},
+                {"role": "assistant", "content": "It identifies prohibited locations. [Section 303.3, p. 10]"},
+                {"role": "user", "content": "Does that exception apply here?"},
+            ],
+        )
+        self.assertEqual(session.tool_calls, 0)
+        self.assertEqual(session.registry.as_dicts(), [])
+
+    def test_guardrail_distinguishes_conversation_from_code_claims(self):
+        from v2_ingestion.react_runtime import _likely_regulatory_question
+
+        self.assertFalse(_likely_regulatory_question("hi, what is your name?"))
+        self.assertFalse(_likely_regulatory_question("Can you help me understand this topic?"))
+        self.assertTrue(_likely_regulatory_question("What does Section 303.3 prohibit?"))
+        self.assertTrue(_likely_regulatory_question("Are multiple fans allowed for ventilation?"))
+
+    def test_non_regulatory_answer_without_evidence_is_allowed(self):
+        class Responses:
+            def create(self, **kwargs):
+                return SimpleNamespace(
+                    id="resp-chat", usage=SimpleNamespace(input_tokens=3, output_tokens=5),
+                    output=[], output_text="Hello! I can help you explore the HVAC code corpus.",
+                )
+
+        class Client:
+            responses = Responses()
+
+        class Store:
+            def preflight(self):
+                return True
+
+        with tempfile.TemporaryDirectory() as directory:
+            runtime = ReActGraphRAG(
+                client=Client(), store=Store(), checkpoint_dir=Path(directory),
+            )
+            result = runtime.answer("Hi, what can you help me with?", question_id="chat")
+        self.assertEqual(result["status"], "ok")
+        self.assertTrue(result["citation_validation"]["not_required"])
+        self.assertIn("HVAC", result["answer"])
 
 
 if __name__ == "__main__":

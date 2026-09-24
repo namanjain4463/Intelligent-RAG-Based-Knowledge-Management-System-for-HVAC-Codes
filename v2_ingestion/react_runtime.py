@@ -71,7 +71,21 @@ SYSTEM_INSTRUCTIONS = f"""You are the HVAC Codes ReAct GraphRAG assistant.
 You have exactly three retrieval tools: CypherSearch, VectorSearch, and HybridSearch.
 Choose the first tool yourself. You may call any tool first, call tools sequentially,
 and revise your retrieval strategy after each observation. Do not follow a fixed
-deterministic router. Always gather canonical evidence before answering.
+deterministic router.
+
+Scope and response policy:
+- The authoritative domain is the supplied HVAC code corpus and questions that
+  naturally help a user navigate it.
+- For regulatory/code questions, use retrieval and answer only from the supplied
+  canonical evidence.
+- For greetings, identity questions, capability questions, and ordinary follow-ups
+  that do not require a code claim, respond naturally without retrieval. These
+  responses do not need citations.
+- For questions outside HVAC codes, politely explain that you are focused on the
+  supplied HVAC code corpus and suggest an in-scope alternative. Do not invent
+  outside facts and do not call retrieval tools just to manufacture an answer.
+- If a request is ambiguous, ask a concise clarifying question rather than
+  presenting an unsupported code interpretation.
 
 CypherSearch accepts read-only Cypher supplied by you. Use only the schema above;
 do not invent legacy labels, relationships, or properties. Include a bounded LIMIT
@@ -86,11 +100,10 @@ If the gathered evidence genuinely cannot answer the question, say so explicitly
 Tool observations are compact: `new_evidence` contains complete canonical source
 blocks, while `existing_evidence` names source blocks already present in the
 conversation-wide evidence ledger. Use only those evidence IDs for citations.
-Cite every factual or regulatory statement using only supplied evidence identifiers
-such as [E1]. This is required even for clarification answers, section inventories,
-bounded-result explanations, and statements that evidence is insufficient. Put a
-relevant evidence identifier at the end of each paragraph or list group, and never
-return a final answer without at least one [E#] citation when evidence was supplied.
+When retrieval was used, cite every factual or regulatory statement using only
+supplied evidence identifiers such as [E1]. Put a relevant evidence identifier at
+the end of each paragraph or list group. If no retrieval was needed, do not invent
+a citation merely to satisfy a format rule.
 Never generate Section/page citations yourself. Do not use citations such as
 [Section 303.3, p. 10]. Keep the final answer concise and answer directly.
 """
@@ -1000,16 +1013,19 @@ class ReActGraphRAG:
         question: str,
         question_id: str | None = None,
         session_id: str | None = None,
+        conversation_history: list[dict[str, Any]] | None = None,
     ) -> ReActSession:
         """Create an isolated session; no prior question state is reused."""
 
         text = str(question or "").strip()
         resolved_session_id = str(session_id or uuid4().hex)
+        input_items = self._conversation_input_items(conversation_history)
+        input_items.append({"role": "user", "content": text})
         session = ReActSession(
             session_id=resolved_session_id,
             question_id=str(question_id or "question"),
             question=text,
-            input_items=[{"role": "user", "content": text}],
+            input_items=input_items,
             registry=EvidenceRegistry(),
             emitted_evidence_ids=set(),
             checkpoint_path=self._checkpoint_path(resolved_session_id),
@@ -1019,6 +1035,29 @@ class ReActGraphRAG:
         self.last_session = session
         self.last_checkpoint_path = session.checkpoint_path
         return session
+
+    @staticmethod
+    def _conversation_input_items(
+        conversation_history: list[dict[str, Any]] | None,
+    ) -> list[dict[str, str]]:
+        """Copy a small browser-session history into a new request.
+
+        This is conversational memory only. It does not carry ReAct tool calls,
+        evidence ledgers, checkpoints, or graph state between questions.
+        """
+
+        if not conversation_history:
+            return []
+        result: list[dict[str, str]] = []
+        for item in conversation_history[-8:]:
+            if not isinstance(item, dict):
+                continue
+            role = str(item.get("role") or "").strip().lower()
+            content = str(item.get("content") or "").strip()
+            if role not in {"user", "assistant"} or not content:
+                continue
+            result.append({"role": role, "content": content[:4000]})
+        return result
 
     @staticmethod
     def _request_configuration() -> dict[str, Any]:
@@ -1397,12 +1436,31 @@ class ReActGraphRAG:
                         f"Continuation checkpoint persistence failed: {exc}", registry, trace,
                         session.tool_calls, session.payload_accounting, session,
                     )
-                raw_answer = str(getattr(response, "output_text", "") or "")
+                raw_answer = str(getattr(response, "output_text", "") or "").strip()
                 if not registry.as_dicts():
-                    return self._safe_failure(
-                        "The agent returned an answer without canonical evidence.",
-                        registry, trace, session.tool_calls, session.payload_accounting, session,
-                    )
+                    if _likely_regulatory_question(question):
+                        return self._safe_failure(
+                            "I couldn’t verify that code-related answer from the canonical HVAC evidence. "
+                            "I don’t want to guess; please provide a section number or describe the HVAC "
+                            "requirement you want checked.",
+                            registry, trace, session.tool_calls, session.payload_accounting, session,
+                        )
+                    return {
+                        "status": "ok", "answer": raw_answer,
+                        "raw_answer": raw_answer, "tool_calls": session.tool_calls,
+                        "tool_trace": trace, "evidence": [],
+                        "citation_validation": {
+                            "valid": True, "not_required": True,
+                            "cited_evidence_ids": [], "unsupported_evidence_ids": [],
+                        }, "model": MODEL,
+                        "payload_accounting": session.payload_accounting,
+                        "question_id": session.question_id,
+                        "session_id": session.session_id,
+                        "checkpoint_path": str(session.checkpoint_path) if session.checkpoint_path else None,
+                        "usage_checkpoints": list(session.usage_checkpoints),
+                        "per_question_input_tokens": session.per_question_input_tokens,
+                        "evaluation_total_input_tokens": session.evaluation_total_input_tokens,
+                    }
                 validation = registry.render(raw_answer)
                 if not validation["valid"]:
                     result = self._safe_failure(
@@ -1488,60 +1546,69 @@ class ReActGraphRAG:
             registry, trace, session.tool_calls, session.payload_accounting, session,
         )
 
-    def answer(self, question: str, question_id: str | None = None) -> dict[str, Any]:
-        return self._run_session(self.start_session(question, question_id=question_id))
+    def answer(
+        self,
+        question: str,
+        question_id: str | None = None,
+        conversation_history: list[dict[str, Any]] | None = None,
+    ) -> dict[str, Any]:
+        return self._run_session(
+            self.start_session(
+                question,
+                question_id=question_id,
+                conversation_history=conversation_history,
+            )
+        )
 
 
-def query_agent(question: str) -> str:
-    conversational = conversational_response(question)
-    if conversational is not None:
-        return conversational
-    runtime = ReActGraphRAG()
-    try:
-        result = runtime.answer(question)
-        if result.get("status") == "ok":
-            return str(result["answer"])
-        return f"Unable to produce a grounded answer: {result.get('error', 'unknown runtime error')}"
-    finally:
-        if runtime.store is not None:
-            runtime.store.close()
+def _likely_regulatory_question(question: str) -> bool:
+    """Safety gate for code claims when the model gathered no evidence.
 
-
-def conversational_response(question: str) -> str | None:
-    """Answer basic assistant-scope questions without retrieval or citations.
-
-    These questions are not requests for code evidence. Keeping this path
-    deterministic prevents the evidence-first runtime from treating a greeting
-    or capability question as a failed regulatory answer.
+    This is not a retrieval router or an answer generator. It only prevents a
+    no-tool model response from presenting an ungrounded regulatory claim.
     """
 
     text = re.sub(r"\s+", " ", str(question or "").strip().casefold())
     if not text:
-        return None
+        return False
+    return bool(re.search(
+        r"\b(section|chapter|table|equation|code|requirement|shall|required|"
+        r"prohibit(?:ed|s)?|allow(?:ed|s)?|permission|exception|condition|"
+        r"clearance|ventilation|refrigerant|duct|furnace|boiler|combustion|"
+        r"hvac|mechanical)\b|\b\d{3,4}(?:\.\d+)+\b",
+        text,
+    ))
 
-    greeting_terms = ("hi", "hello", "hey", "good morning", "good afternoon", "good evening")
-    asks_identity = any(phrase in text for phrase in ("what is your name", "who are you"))
-    asks_capabilities = any(
-        phrase in text
-        for phrase in ("what can you do", "what do you do", "what all can you do", "how can you help")
-    )
-    is_greeting = any(
-        text == term or text.startswith(f"{term},") or text.startswith(f"{term} ")
-        for term in greeting_terms
-    )
-    if not (is_greeting or asks_identity or asks_capabilities):
-        return None
 
-    return (
-        "I’m the HVAC Codes Assistant. I help you navigate the provided HVAC code "
-        "corpus with grounded, section-and-page-cited answers.\n\n"
-        "I can help you:\n"
-        "- find and explain specific sections and subsections;\n"
-        "- answer requirements, prohibitions, permissions, conditions, and exceptions;\n"
-        "- search by topic across the code; and\n"
-        "- point you to the relevant source sections and pages.\n\n"
-        "Ask an HVAC-code question—for example, “What does Section 303.3 prohibit?”"
-    )
+def _user_facing_failure(message: str) -> str:
+    """Turn runtime failures into useful, non-internal UI guidance."""
+
+    lowered = str(message or "").casefold()
+    if "preflight" in lowered or "aura" in lowered or "connect" in lowered:
+        return "I’m sorry, I can’t reach the HVAC code knowledge graph right now. Please try again in a moment."
+    if "citation" in lowered or "evidence" in lowered or "grounded" in lowered:
+        return (
+            "I’m sorry, I couldn’t safely connect that answer to the HVAC code source. "
+            "Please try a specific section number or a narrower code question."
+        )
+    if "responses api" in lowered or "openai" in lowered:
+        return "I’m sorry, the answer service could not complete that request. Please try again shortly."
+    return "I’m sorry, I couldn’t complete that safely. Please try a specific HVAC code section or requirement."
+
+
+def query_agent(
+    question: str,
+    conversation_history: list[dict[str, Any]] | None = None,
+) -> str:
+    runtime = ReActGraphRAG()
+    try:
+        result = runtime.answer(question, conversation_history=conversation_history)
+        if result.get("status") == "ok":
+            return str(result["answer"])
+        return _user_facing_failure(str(result.get("error", "unknown runtime error")))
+    finally:
+        if runtime.store is not None:
+            runtime.store.close()
 
 
 def get_statistics() -> dict[str, Any]:
