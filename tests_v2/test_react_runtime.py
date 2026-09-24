@@ -121,6 +121,29 @@ class ReactRuntimeSafetyTests(unittest.TestCase):
         ):
             self.assertNotIn(forbidden, text)
 
+    def test_compaction_keeps_only_safe_inventory_fields(self):
+        compact = compact_tool_observation(
+            {
+                "tool": "CypherSearch",
+                "rows": [{
+                    "total_sections": 898,
+                    "section_number": "303.1",
+                    "section_title": "General",
+                    "id": "section:303.1",
+                    "retrieval_hash": "secret",
+                }],
+                "canonical_evidence": [],
+            },
+            set(),
+        )
+        self.assertEqual(compact["inventory"], [{
+            "total_sections": 898,
+            "section_number": "303.1",
+            "section_title": "General",
+        }])
+        self.assertNotIn('"id"', json.dumps(compact))
+        self.assertNotIn("retrieval_hash", json.dumps(compact))
+
     def test_evidence_ledger_deduplicates_and_keeps_ids_stable(self):
         registry = EvidenceRegistry()
         first_id = registry.add("303.3", 10, "1. Sleeping rooms.", "Prohibited locations")
@@ -611,6 +634,7 @@ class ReactRuntimeSafetyTests(unittest.TestCase):
         self.assertFalse(_likely_regulatory_question(
             "What all can you do? Give me the code for 1D analysis of a vapour chamber."
         ))
+        self.assertFalse(_likely_regulatory_question("What all sections are there?"))
         self.assertTrue(_likely_regulatory_question("What does Section 303.3 prohibit?"))
         self.assertTrue(_likely_regulatory_question("Are multiple fans allowed for ventilation?"))
 

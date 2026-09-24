@@ -91,6 +91,18 @@ Scope and response policy:
   of scope.
 - If a request is ambiguous, ask a concise clarifying question rather than
   presenting an unsupported code interpretation.
+- For corpus-inventory questions such as “what sections are there,” “how many
+  chapters are included,” or “list the section index,” use the graph structure
+  to report verified counts and chapter/section metadata. Count every real
+  Section node (excluding only section:unassigned) separately from the
+  top-level Section nodes directly under Chapters. Do not call a top-level
+  listing the complete section inventory: nested sections are real sections
+  too. A bounded result page is not a complete index: never present the first
+  100 rows as if they were all sections. If the complete index is too long for
+  one answer, state the total and offer numbered batches or a narrower
+  chapter/range. A reliable count query is:
+  MATCH (s:Section) WHERE s.number <> 'unassigned'
+  RETURN count(s) AS total_sections LIMIT 1.
 
 CypherSearch accepts read-only Cypher supplied by you. Use only the schema above;
 do not invent legacy labels, relationships, or properties. Include a bounded LIMIT
@@ -456,6 +468,24 @@ def compact_tool_observation(
         compact["result_count"] = len(observation["passages"])
     elif isinstance(observation.get("rows"), list):
         compact["result_count"] = len(observation["rows"])
+        inventory_rows: list[dict[str, Any]] = []
+        safe_inventory_keys = {
+            "chapter_number", "chapter_title", "section_number", "section_title",
+            "number", "title", "page", "total_sections", "section_count", "count", "total",
+        }
+        for row in observation["rows"]:
+            if not isinstance(row, dict):
+                continue
+            safe_row = {
+                key: value
+                for key, value in row.items()
+                if key in safe_inventory_keys
+                and isinstance(value, (str, int, float, bool))
+            }
+            if safe_row:
+                inventory_rows.append(safe_row)
+        if inventory_rows:
+            compact["inventory"] = inventory_rows[:MAX_CYPHER_ROWS]
 
     existing: list[str] = []
     new: list[dict[str, Any]] = []
@@ -1750,6 +1780,14 @@ def _likely_regulatory_question(question: str) -> bool:
         text,
     ))
     explicit_section = bool(re.search(r"\bsection\s+\d{3,4}(?:\.\d+)*\b", text))
+    inventory_intent = bool(re.search(
+        r"\b(?:what\s+(?:all\s+)?sections?|which\s+sections?|"
+        r"list\s+(?:all\s+)?sections?|section\s+index|table\s+of\s+contents|"
+        r"how\s+many\s+chapters?|what\s+chapters?)\b",
+        text,
+    ))
+    if inventory_intent and not explicit_section:
+        return False
     if capability_intent and not explicit_section:
         return False
     return bool(re.search(

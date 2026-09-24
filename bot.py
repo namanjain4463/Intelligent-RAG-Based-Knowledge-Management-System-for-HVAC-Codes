@@ -139,10 +139,15 @@ st.markdown(
         }
 
         [data-testid="stChatInput"] > div {
-            border: 1px solid #c9d8e7;
+            border: 1px solid #c9d8e7 !important;
             border-radius: 17px;
             background: #ffffff;
             box-shadow: 0 8px 24px rgba(25, 55, 90, 0.1);
+        }
+
+        [data-testid="stChatInput"] > div:focus-within {
+            border-color: #8fb6d3 !important;
+            box-shadow: 0 8px 24px rgba(25, 55, 90, 0.1) !important;
         }
 
         [data-testid="stChatInput"] textarea {
@@ -152,8 +157,40 @@ st.markdown(
         }
 
         [data-testid="stChatInput"] textarea::placeholder {
-            color: #718395 !important;
+            color: #9aaabd !important;
             opacity: 1 !important;
+        }
+
+        [data-testid="stChatInput"] button {
+            color: #7894aa !important;
+        }
+
+        [data-testid="stChatInput"] button svg {
+            opacity: 0.9;
+        }
+
+        .searching-indicator {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.38rem;
+            color: #718395;
+            font-size: 0.94rem;
+        }
+
+        .searching-dot {
+            width: 0.42rem;
+            height: 0.42rem;
+            border-radius: 50%;
+            background: #6e9bb9;
+            animation: searching-pulse 1.15s ease-in-out infinite;
+        }
+
+        .searching-dot:nth-child(2) { animation-delay: 0.14s; }
+        .searching-dot:nth-child(3) { animation-delay: 0.28s; }
+
+        @keyframes searching-pulse {
+            0%, 60%, 100% { opacity: 0.35; transform: translateY(0); }
+            30% { opacity: 1; transform: translateY(-2px); }
         }
 
         .welcome {
@@ -285,7 +322,17 @@ if pending_prompt:
     scroll_to_latest_message()
     with st.chat_message("assistant", avatar="🤖"):
         response_placeholder = st.empty()
-        response_placeholder.markdown("Searching the HVAC code and checking the source…")
+        response_placeholder.markdown(
+            """
+            <div class="searching-indicator" role="status" aria-live="polite">
+                <span class="searching-dot"></span>
+                <span class="searching-dot"></span>
+                <span class="searching-dot"></span>
+                <span>Searching the HVAC code and checking the source…</span>
+            </div>
+            """,
+            unsafe_allow_html=True,
+        )
         try:
             response = query_agent(pending_prompt, conversation_history=prior_history)
         except Exception:
