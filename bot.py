@@ -24,14 +24,22 @@ st.set_page_config(
 st.markdown(
     """
     <style>
+        html, body { background: #f5f8fc !important; }
         #MainMenu { visibility: hidden; }
         footer { visibility: hidden; }
-        header[data-testid="stHeader"] { background: transparent; }
+        .stApp,
+        [data-testid="stAppViewContainer"],
+        [data-testid="stMain"] {
+            background: #f5f8fc;
+            color: #183247;
+        }
+        header[data-testid="stHeader"] { background: #f5f8fc; }
         [data-testid="stDeployButton"] { display: none; }
+        [data-testid="stToolbar"] { visibility: hidden; height: 0; }
 
         .block-container {
             max-width: 980px;
-            padding: 2.5rem 1.25rem 7rem;
+            padding: 2rem 1.25rem 7rem;
         }
 
         .hero {
@@ -74,10 +82,29 @@ st.markdown(
         }
 
         [data-testid="stChatMessage"] {
-            border-radius: 16px;
-            border: 1px solid rgba(18, 48, 74, 0.08);
-            margin-bottom: 0.75rem;
-            padding: 0.9rem 1rem;
+            border-radius: 18px;
+            border: 1px solid #e2eaf2;
+            margin: 0.7rem 0;
+            padding: 0.85rem 1rem;
+            background: #ffffff !important;
+            box-shadow: 0 5px 16px rgba(25, 55, 90, 0.05);
+            color: #183247;
+        }
+
+        [aria-label="Chat message from user"] {
+            margin-left: 10% !important;
+            background: #eaf3ff !important;
+            border-color: #cfe3f8 !important;
+        }
+
+        [aria-label="Chat message from assistant"] {
+            margin-right: 10% !important;
+        }
+
+        [data-testid="stChatMessage"] [data-testid="stMarkdownContainer"],
+        [data-testid="stChatMessage"] [data-testid="stMarkdownContainer"] p,
+        [data-testid="stChatMessage"] [data-testid="stMarkdownContainer"] li {
+            color: #183247;
         }
 
         [data-testid="stChatMessage"] [data-testid="stMarkdownContainer"] p:last-child {
@@ -87,6 +114,40 @@ st.markdown(
         [data-testid="stChatInput"] {
             max-width: 980px;
             margin: 0 auto;
+        }
+
+        [data-testid="stBottomBlockContainer"],
+        [data-testid="stBottomBlockContainer"] > div {
+            background: #f5f8fc !important;
+            border-top: 0 !important;
+        }
+
+        [data-testid="stBottom"],
+        [data-testid="stBottom"] > div {
+            background: #f5f8fc !important;
+        }
+
+        .stChatFloatingInputContainer,
+        [data-testid="stBottomBlockContainer"] section {
+            background: #f5f8fc !important;
+        }
+
+        [data-testid="stChatInput"] > div {
+            border: 1px solid #c9d8e7;
+            border-radius: 17px;
+            background: #ffffff;
+            box-shadow: 0 8px 24px rgba(25, 55, 90, 0.1);
+        }
+
+        [data-testid="stChatInput"] textarea {
+            background: #ffffff !important;
+            color: #183247 !important;
+            -webkit-text-fill-color: #183247 !important;
+        }
+
+        [data-testid="stChatInput"] textarea::placeholder {
+            color: #718395 !important;
+            opacity: 1 !important;
         }
 
         .welcome {
@@ -124,6 +185,8 @@ st.markdown(
             .hero { padding: 1.25rem 1.1rem; border-radius: 17px; }
             .examples { grid-template-columns: 1fr; }
             [data-testid="stChatMessage"] { padding: 0.75rem; }
+            [aria-label="Chat message from user"] { margin-left: 0 !important; }
+            [aria-label="Chat message from assistant"] { margin-right: 0 !important; }
         }
     </style>
     """,
@@ -149,7 +212,8 @@ if "messages" not in st.session_state:
 
 
 for message in st.session_state.messages:
-    with st.chat_message(message["role"]):
+    avatar = "👤" if message["role"] == "user" else "🤖"
+    with st.chat_message(message["role"], avatar=avatar):
         st.markdown(message["content"])
 
 
@@ -181,11 +245,10 @@ if prompt:
             for message in st.session_state.messages[-8:]
             if message.get("role") in {"user", "assistant"}
         ]
-        st.session_state.messages.append({"role": "user", "content": sanitized_prompt})
-        with st.chat_message("user"):
+        with st.chat_message("user", avatar="👤"):
             st.markdown(sanitized_prompt)
 
-        with st.chat_message("assistant"):
+        with st.chat_message("assistant", avatar="🤖"):
             with st.spinner("Searching the HVAC code and checking the source…"):
                 try:
                     response = query_agent(sanitized_prompt, conversation_history=prior_history)
@@ -196,4 +259,10 @@ if prompt:
                     )
                 st.markdown(response)
 
-        st.session_state.messages.append({"role": "assistant", "content": response})
+        # Persist the pair only after the response is complete. This prevents a
+        # Streamlit rerun from rendering the submitted user message twice while
+        # the assistant is still working.
+        st.session_state.messages.extend([
+            {"role": "user", "content": sanitized_prompt},
+            {"role": "assistant", "content": response},
+        ])

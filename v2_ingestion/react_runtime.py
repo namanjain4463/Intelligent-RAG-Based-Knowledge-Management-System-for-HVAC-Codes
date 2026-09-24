@@ -84,6 +84,10 @@ Scope and response policy:
 - For questions outside HVAC codes, politely explain that you are focused on the
   supplied HVAC code corpus and suggest an in-scope alternative. Do not invent
   outside facts and do not call retrieval tools just to manufacture an answer.
+- For a mixed-intent request, answer each part separately: answer the supported
+  capability/conversation part first, then politely decline or redirect only the
+  unrelated part. Never discard the supported part because another part is out
+  of scope.
 - If a request is ambiguous, ask a concise clarifying question rather than
   presenting an unsupported code interpretation.
 
@@ -1571,11 +1575,20 @@ def _likely_regulatory_question(question: str) -> bool:
     text = re.sub(r"\s+", " ", str(question or "").strip().casefold())
     if not text:
         return False
+    capability_intent = bool(re.search(
+        r"\b(?:what\s+(?:all\s+)?can\s+you\s+do|how\s+can\s+you\s+help|"
+        r"what\s+is\s+your\s+name|who\s+are\s+you)\b",
+        text,
+    ))
+    explicit_section = bool(re.search(r"\bsection\s+\d{3,4}(?:\.\d+)*\b", text))
+    if capability_intent and not explicit_section:
+        return False
     return bool(re.search(
-        r"\b(section|chapter|table|equation|code|requirement|shall|required|"
+        r"\b(section|chapter|table|equation|requirement|shall|required|"
         r"prohibit(?:ed|s)?|allow(?:ed|s)?|permission|exception|condition|"
         r"clearance|ventilation|refrigerant|duct|furnace|boiler|combustion|"
-        r"hvac|mechanical)\b|\b\d{3,4}(?:\.\d+)+\b",
+        r"hvac|mechanical)\b|\bhvac\s+code\b|\bcode\s+(?:section|requirement|provision)\b|"
+        r"\b\d{3,4}(?:\.\d+)+\b",
         text,
     ))
 

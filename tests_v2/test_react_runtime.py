@@ -597,6 +597,9 @@ class ReactRuntimeSafetyTests(unittest.TestCase):
 
         self.assertFalse(_likely_regulatory_question("hi, what is your name?"))
         self.assertFalse(_likely_regulatory_question("Can you help me understand this topic?"))
+        self.assertFalse(_likely_regulatory_question(
+            "What all can you do? Give me the code for 1D analysis of a vapour chamber."
+        ))
         self.assertTrue(_likely_regulatory_question("What does Section 303.3 prohibit?"))
         self.assertTrue(_likely_regulatory_question("Are multiple fans allowed for ventilation?"))
 
