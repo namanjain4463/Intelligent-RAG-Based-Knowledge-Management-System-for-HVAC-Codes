@@ -8,6 +8,7 @@ from v2_ingestion.react_runtime import (
     build_payload_accounting,
     CanonicalEvidenceAssembler,
     compact_tool_observation,
+    conversational_response,
     EvidenceRegistry,
     ReActGraphRAG,
     serialize_function_call_output_for_resume,
@@ -18,6 +19,16 @@ from v2_ingestion.react_runtime import (
 
 
 class ReactRuntimeSafetyTests(unittest.TestCase):
+    def test_conversational_capability_question_is_answered_without_retrieval(self):
+        answer = conversational_response("hi, what is your name and what all can you do?")
+        self.assertIsNotNone(answer)
+        self.assertIn("HVAC Codes Assistant", answer)
+        self.assertIn("specific sections and subsections", answer)
+        self.assertIn("conditions, and exceptions", answer)
+
+    def test_regulatory_question_is_not_captured_by_conversational_path(self):
+        self.assertIsNone(conversational_response("What does Section 303.3 prohibit?"))
+
     def test_exactly_three_runtime_tools_are_exposed(self):
         self.assertEqual(
             [tool["name"] for tool in TOOL_SPECS],

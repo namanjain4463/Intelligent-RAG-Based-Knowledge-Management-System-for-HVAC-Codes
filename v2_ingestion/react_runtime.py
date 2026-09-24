@@ -1134,8 +1134,32 @@ class ReActGraphRAG:
         )
         temporary = path.with_suffix(path.suffix + ".tmp")
         temporary.write_text(json.dumps(payload, ensure_ascii=False, indent=2), encoding="utf-8")
-        temporary.replace(path)
-        self.last_checkpoint_path = path
+        last_error: PermissionError | None = None
+        for delay in (0.0, 0.1, 0.25, 0.5):
+            if delay:
+                import time
+
+                time.sleep(delay)
+            try:
+                os.replace(temporary, path)
+                self.last_checkpoint_path = path
+                return
+            except PermissionError as exc:
+                last_error = exc
+
+        # Windows can briefly hold the previous checkpoint while the local
+        # file watcher is reading it. Preserve the new checkpoint under a
+        # versioned name rather than turning a successful answer into a
+        # runtime failure.
+        fallback = path.with_name(f"{path.stem}.{uuid4().hex[:8]}{path.suffix}")
+        try:
+            os.replace(temporary, fallback)
+        except OSError:
+            if last_error is not None:
+                raise last_error
+            raise
+        session.checkpoint_path = fallback
+        self.last_checkpoint_path = fallback
 
     @staticmethod
     def _restore_registry(payload: dict[str, Any]) -> EvidenceRegistry:
@@ -1469,6 +1493,9 @@ class ReActGraphRAG:
 
 
 def query_agent(question: str) -> str:
+    conversational = conversational_response(question)
+    if conversational is not None:
+        return conversational
     runtime = ReActGraphRAG()
     try:
         result = runtime.answer(question)
@@ -1478,6 +1505,43 @@ def query_agent(question: str) -> str:
     finally:
         if runtime.store is not None:
             runtime.store.close()
+
+
+def conversational_response(question: str) -> str | None:
+    """Answer basic assistant-scope questions without retrieval or citations.
+
+    These questions are not requests for code evidence. Keeping this path
+    deterministic prevents the evidence-first runtime from treating a greeting
+    or capability question as a failed regulatory answer.
+    """
+
+    text = re.sub(r"\s+", " ", str(question or "").strip().casefold())
+    if not text:
+        return None
+
+    greeting_terms = ("hi", "hello", "hey", "good morning", "good afternoon", "good evening")
+    asks_identity = any(phrase in text for phrase in ("what is your name", "who are you"))
+    asks_capabilities = any(
+        phrase in text
+        for phrase in ("what can you do", "what do you do", "what all can you do", "how can you help")
+    )
+    is_greeting = any(
+        text == term or text.startswith(f"{term},") or text.startswith(f"{term} ")
+        for term in greeting_terms
+    )
+    if not (is_greeting or asks_identity or asks_capabilities):
+        return None
+
+    return (
+        "I’m the HVAC Codes Assistant. I help you navigate the provided HVAC code "
+        "corpus with grounded, section-and-page-cited answers.\n\n"
+        "I can help you:\n"
+        "- find and explain specific sections and subsections;\n"
+        "- answer requirements, prohibitions, permissions, conditions, and exceptions;\n"
+        "- search by topic across the code; and\n"
+        "- point you to the relevant source sections and pages.\n\n"
+        "Ask an HVAC-code question—for example, “What does Section 303.3 prohibit?”"
+    )
 
 
 def get_statistics() -> dict[str, Any]:
