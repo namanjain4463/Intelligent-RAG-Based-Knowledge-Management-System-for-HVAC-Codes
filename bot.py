@@ -8,6 +8,7 @@ Run locally with::
 from __future__ import annotations
 
 import streamlit as st
+import streamlit.components.v1 as components
 
 from agent import query_agent
 from validation import sanitize_query, validate_query
@@ -91,14 +92,19 @@ st.markdown(
             color: #183247;
         }
 
-        [aria-label="Chat message from user"] {
+        [data-testid="stChatMessage"]:has([aria-label="Chat message from user"]) {
             margin-left: 10% !important;
             background: #eaf3ff !important;
             border-color: #cfe3f8 !important;
         }
 
-        [aria-label="Chat message from assistant"] {
+        [data-testid="stChatMessage"]:has([aria-label="Chat message from assistant"]) {
             margin-right: 10% !important;
+        }
+
+        [data-testid="stChatMessageContent"] {
+            background: transparent !important;
+            color: #183247 !important;
         }
 
         [data-testid="stChatMessage"] [data-testid="stMarkdownContainer"],
@@ -185,8 +191,8 @@ st.markdown(
             .hero { padding: 1.25rem 1.1rem; border-radius: 17px; }
             .examples { grid-template-columns: 1fr; }
             [data-testid="stChatMessage"] { padding: 0.75rem; }
-            [aria-label="Chat message from user"] { margin-left: 0 !important; }
-            [aria-label="Chat message from assistant"] { margin-right: 0 !important; }
+            [data-testid="stChatMessage"]:has([aria-label="Chat message from user"]) { margin-left: 0 !important; }
+            [data-testid="stChatMessage"]:has([aria-label="Chat message from assistant"]) { margin-right: 0 !important; }
         }
     </style>
     """,
@@ -211,13 +217,56 @@ if "messages" not in st.session_state:
     st.session_state.messages = []
 
 
+prompt = st.chat_input("Ask about an HVAC section, requirement, or exception…")
+pending_prompt = None
+prior_history = []
+
+if prompt:
+    is_valid, error_msg = validate_query(prompt)
+    if not is_valid:
+        st.error(f"Please revise your question: {error_msg}")
+    else:
+        pending_prompt = sanitize_query(prompt)
+        prior_history = [
+            {"role": message["role"], "content": message["content"]}
+            for message in st.session_state.messages[-8:]
+            if message.get("role") in {"user", "assistant"}
+        ]
+        st.session_state.messages.append({"role": "user", "content": pending_prompt})
+
+
 for message in st.session_state.messages:
     avatar = "👤" if message["role"] == "user" else "🤖"
     with st.chat_message(message["role"], avatar=avatar):
         st.markdown(message["content"])
 
 
-if not st.session_state.messages:
+def scroll_to_latest_message() -> None:
+    """Ask the browser to keep the latest chat message in view."""
+
+    components.html(
+        """
+        <script>
+        (() => {
+          const scroll = () => {
+            try {
+              const doc = window.parent.document;
+              const messages = doc.querySelectorAll('[data-testid="stChatMessage"]');
+              const latest = messages[messages.length - 1];
+              if (latest) latest.scrollIntoView({behavior: "smooth", block: "end"});
+            } catch (_) { /* Streamlit may sandbox this helper; native scroll remains available. */ }
+          };
+          setTimeout(scroll, 0);
+          setTimeout(scroll, 180);
+          setTimeout(scroll, 500);
+        })();
+        </script>
+        """,
+        height=0,
+    )
+
+
+if not st.session_state.messages and not prompt:
     st.markdown(
         """
         <div class="welcome">
@@ -232,37 +281,19 @@ if not st.session_state.messages:
         unsafe_allow_html=True,
     )
 
+if pending_prompt:
+    scroll_to_latest_message()
+    with st.chat_message("assistant", avatar="🤖"):
+        response_placeholder = st.empty()
+        response_placeholder.markdown("Searching the HVAC code and checking the source…")
+        try:
+            response = query_agent(pending_prompt, conversation_history=prior_history)
+        except Exception:
+            response = (
+                "I’m sorry, something went wrong while handling that request. "
+                "Please try a specific HVAC code section or requirement."
+            )
+        response_placeholder.markdown(response)
 
-prompt = st.chat_input("Ask about an HVAC section, requirement, or exception…")
-if prompt:
-    is_valid, error_msg = validate_query(prompt)
-    if not is_valid:
-        st.error(f"Please revise your question: {error_msg}")
-    else:
-        sanitized_prompt = sanitize_query(prompt)
-        prior_history = [
-            {"role": message["role"], "content": message["content"]}
-            for message in st.session_state.messages[-8:]
-            if message.get("role") in {"user", "assistant"}
-        ]
-        with st.chat_message("user", avatar="👤"):
-            st.markdown(sanitized_prompt)
-
-        with st.chat_message("assistant", avatar="🤖"):
-            with st.spinner("Searching the HVAC code and checking the source…"):
-                try:
-                    response = query_agent(sanitized_prompt, conversation_history=prior_history)
-                except Exception:
-                    response = (
-                        "I’m sorry, something went wrong while handling that request. "
-                        "Please try a specific HVAC code section or requirement."
-                    )
-                st.markdown(response)
-
-        # Persist the pair only after the response is complete. This prevents a
-        # Streamlit rerun from rendering the submitted user message twice while
-        # the assistant is still working.
-        st.session_state.messages.extend([
-            {"role": "user", "content": sanitized_prompt},
-            {"role": "assistant", "content": response},
-        ])
+    st.session_state.messages.append({"role": "assistant", "content": response})
+    scroll_to_latest_message()

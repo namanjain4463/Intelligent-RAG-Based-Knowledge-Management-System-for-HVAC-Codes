@@ -43,6 +43,8 @@ class ReactRuntimeSafetyTests(unittest.TestCase):
         rendered = registry.render("The location is prohibited. [E1]")
         self.assertTrue(rendered["valid"])
         self.assertIn("[Section 303.3, p. 10]", rendered["rendered_answer"])
+        repeated = registry.render("The location is prohibited. [E1][E1]")
+        self.assertEqual(repeated["rendered_answer"].count("[Section 303.3, p. 10]"), 1)
         rejected = registry.render("The location is prohibited. [E99]")
         self.assertFalse(rejected["valid"])
         self.assertEqual(rejected["unsupported_evidence_ids"], ["E99"])
@@ -79,6 +81,15 @@ class ReactRuntimeSafetyTests(unittest.TestCase):
             "Holes bored in joists shall not be within 2 inches (51 mm) of the top or bottom of the joist",
             text,
         )
+
+    def test_lexical_fallback_recovers_structural_ventilation_clause(self):
+        assembler = CanonicalEvidenceAssembler()
+        matches = assembler.lexical_section_matches(
+            "Are multiple fans allowed to provide the emergency ventilation rate?",
+            limit=5,
+        )
+        self.assertTrue(matches)
+        self.assertEqual(matches[0]["number"], "1105.6.3")
 
     def test_compaction_excludes_rich_requirement_and_graph_fields(self):
         registry = EvidenceRegistry()

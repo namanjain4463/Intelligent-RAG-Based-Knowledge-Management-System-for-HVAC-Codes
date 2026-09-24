@@ -37,6 +37,7 @@ REQUIREMENTS_PATH = OUTPUT / "semantic" / "requirements.parquet"
 MODEL = "gpt-5.6-luna"
 EMBEDDING_MODEL = "text-embedding-3-large"
 VECTOR_INDEX = "hvac_passage_embeddings"
+FULLTEXT_INDEX = "requirement_text_fulltext"
 VECTOR_DIMENSIONS = 3072
 MAX_TOOL_CALLS = 6
 MAX_CYPHER_ROWS = 100
@@ -101,6 +102,10 @@ VectorSearch and HybridSearch accept semantic search text, not Cypher.
 Answer only from the supplied canonical evidence. Preserve exact terminology,
 conditions, exceptions, permissions, and prohibitions. Never invent a requirement.
 If the gathered evidence genuinely cannot answer the question, say so explicitly.
+Before answering a permission/prohibition/value question, verify that the supplied
+source text directly addresses the named subject and action. A merely related
+section is not sufficient. If the first candidates do not contain the requested
+clause, use another retrieval tool or a more precise search before answering.
 Tool observations are compact: `new_evidence` contains complete canonical source
 blocks, while `existing_evidence` names source blocks already present in the
 conversation-wide evidence ledger. Use only those evidence IDs for citations.
@@ -321,6 +326,14 @@ class EvidenceRegistry:
                 continue
             page = f", p. {block.page}" if block.page is not None else ""
             rendered = rendered.replace(f"[{evidence_id}]", f"[Section {block.section_number}{page}]")
+        # Multiple evidence blocks can represent adjacent fragments of the
+        # same section/page. Keep the binding intact but avoid a visually noisy
+        # run of identical rendered citations in a list.
+        rendered = re.sub(
+            r"(\[Section [^\]]+\])(?:\1)+",
+            r"\1",
+            rendered,
+        )
         return {
             "valid": True,
             "rendered_answer": rendered,
@@ -554,6 +567,82 @@ class CanonicalEvidenceAssembler:
         result.reverse()
         return result
 
+    def lexical_section_matches(self, query: str, limit: int = 5) -> list[dict[str, Any]]:
+        """Find canonical sections containing the query's strongest phrases.
+
+        This is a local structural fallback inside HybridSearch, not an answer
+        generator or a router. It covers clauses that were preserved structurally
+        but did not become standalone Requirement records.
+        """
+
+        normalized_query = re.sub(r"\s+", " ", str(query or "").casefold()).strip()
+        query_tokens = [
+            token for token in re.findall(r"[a-z0-9]+", normalized_query)
+            if len(token) > 2
+        ]
+        if not query_tokens:
+            return []
+        query_bigrams = {
+            " ".join(query_tokens[index:index + 2])
+            for index in range(len(query_tokens) - 1)
+        }
+        query_trigrams = {
+            " ".join(query_tokens[index:index + 3])
+            for index in range(len(query_tokens) - 2)
+        }
+        best_by_number: dict[str, tuple[int, dict[str, Any]]] = {}
+        # Only treat a numbered heading at the beginning of a physical line as
+        # a boundary. References such as "Sections 1105.6.3.1 and ..." must
+        # remain inside the governing section's source span.
+        heading_pattern = re.compile(r"(?m)^\s*(\d{3,4}(?:\.\d+)+)(?=\s+)")
+        for number, section in self.sections_by_number.items():
+            records = own_section_records(
+                section, self.section_numbers, self.exception_fallbacks,
+            )
+            for record in records:
+                # Section titles can contain stale merged-heading text from
+                # historical reconciliation. Search normative blocks only;
+                # headings are represented by the selected section identity.
+                if record.get("kind") == "section_heading":
+                    continue
+                source = str(record.get("source_text") or "")
+                if not source:
+                    continue
+                headings = list(heading_pattern.finditer(source))
+                segments: list[tuple[str, str]] = []
+                if headings:
+                    for index, heading in enumerate(headings):
+                        owner = str(heading.group(1))
+                        if owner not in self.sections_by_number:
+                            continue
+                        end = headings[index + 1].start() if index + 1 < len(headings) else len(source)
+                        segments.append((owner, source[heading.start():end]))
+                else:
+                    segments.append((number, source))
+                for owner, segment in segments:
+                    searchable = re.sub(r"\s+", " ", segment.casefold()).strip()
+                    term_hits = sum(1 for token in set(query_tokens) if token in searchable)
+                    bigram_hits = sum(1 for phrase in query_bigrams if phrase in searchable)
+                    trigram_hits = sum(1 for phrase in query_trigrams if phrase in searchable)
+                    score = term_hits + (5 * bigram_hits) + (10 * trigram_hits)
+                    if score <= 0:
+                        continue
+                    owner_section = self.sections_by_number[owner]
+                    candidate = {
+                        "number": owner,
+                        "title": clean_section_title(owner_section.get("title")),
+                        "page": (owner_section.get("provenance") or {}).get("page_no"),
+                    }
+                    previous = best_by_number.get(owner)
+                    if previous is None or score > previous[0]:
+                        best_by_number[owner] = (score, candidate)
+        scored = [
+            (score, number, candidate)
+            for number, (score, candidate) in best_by_number.items()
+        ]
+        scored.sort(key=lambda item: (-item[0], item[1]))
+        return [item[2] for item in scored[:max(1, int(limit))]]
+
     def assemble(self, direct_section_numbers: list[str], registry: EvidenceRegistry) -> dict[str, Any]:
         direct: list[str] = []
         for number in direct_section_numbers:
@@ -664,6 +753,29 @@ class AuraReadOnlyStore:
             index_name=VECTOR_INDEX,
             top_k=max(1, min(int(top_k), MAX_VECTOR_RESULTS)),
             embedding=embedding,
+        )
+
+    def fulltext_query(self, query: str, top_k: int) -> list[dict[str, Any]]:
+        """Read existing full-text candidates without changing Aura schema."""
+
+        return self._read_fixed(
+            """
+            CALL db.index.fulltext.queryNodes($index_name, $search_query)
+            YIELD node, score
+            WHERE node.section_id <> 'section:unassigned'
+              AND node.is_embedding_representative = true
+              AND node.retrieval_hash IS NOT NULL
+            MATCH (s:Section)-[:STATES]->(node)
+            RETURN node.id AS representative_requirement_id,
+                   node.retrieval_hash AS retrieval_hash,
+                   score, s.id AS section_id, s.number AS section_number,
+                   s.title AS section_title, s.page AS page
+            ORDER BY score DESC, node.id
+            LIMIT $top_k
+            """,
+            index_name=FULLTEXT_INDEX,
+            search_query=str(query or "").strip(),
+            top_k=max(1, min(int(top_k), MAX_VECTOR_RESULTS)),
         )
 
     def section_context(self, section_id: str) -> list[dict[str, Any]]:
@@ -802,23 +914,51 @@ class RetrievalToolExecutor:
         candidates: list[dict[str, Any]] = []
         seen_hashes: set[str] = set()
         for row in rows:
-            retrieval_hash = str(row.get("retrieval_hash") or "")
-            if not retrieval_hash or retrieval_hash in seen_hashes:
+            candidate = self._candidate_from_row(row, method="vector")
+            if candidate is None or candidate["retrieval_hash"] in seen_hashes:
                 continue
-            section_id = str(row.get("section_id") or "")
-            if section_id == "section:unassigned" or str(row.get("section_number")) == "unassigned":
-                continue
-            seen_hashes.add(retrieval_hash)
+            seen_hashes.add(candidate["retrieval_hash"])
+            candidates.append(candidate)
+        return candidates
+
+    def _candidate_from_row(self, row: dict[str, Any], method: str) -> dict[str, Any] | None:
+        retrieval_hash = str(row.get("retrieval_hash") or "")
+        section_id = str(row.get("section_id") or "")
+        if (
+            not retrieval_hash
+            or section_id == "section:unassigned"
+            or str(row.get("section_number")) == "unassigned"
+        ):
+            return None
+        return {
+            "retrieval_hash": retrieval_hash,
+            "representative_requirement_id": row.get("representative_requirement_id"),
+            "similarity": row.get("score"),
+            "retrieval_method": method,
+            "section": {
+                "id": section_id, "number": row.get("section_number"),
+                "title": row.get("section_title"), "page": row.get("page"),
+            },
+            "ancestors": self.store.section_context(section_id),
+            "requirements": self.store.requirements_for_hash(retrieval_hash),
+        }
+
+    def _lexical_candidates(self, query: str, top_k: int) -> list[dict[str, Any]]:
+        candidates: list[dict[str, Any]] = []
+        for match in self.assembler.lexical_section_matches(query, limit=top_k):
+            number = str(match["number"])
+            section_id = f"section:{number}"
             candidates.append({
-                "retrieval_hash": retrieval_hash,
-                "representative_requirement_id": row.get("representative_requirement_id"),
-                "similarity": row.get("score"),
+                "retrieval_hash": f"structural:{number}",
+                "representative_requirement_id": None,
+                "similarity": None,
+                "retrieval_method": "canonical_phrase",
                 "section": {
-                    "id": section_id, "number": row.get("section_number"),
-                    "title": row.get("section_title"), "page": row.get("page"),
+                    "id": section_id, "number": number,
+                    "title": match.get("title"), "page": match.get("page"),
                 },
                 "ancestors": self.store.section_context(section_id),
-                "requirements": self.store.requirements_for_hash(retrieval_hash),
+                "requirements": self.store.section_requirements(section_id),
             })
         return candidates
 
@@ -852,7 +992,36 @@ class RetrievalToolExecutor:
     def hybrid_search(self, arguments: dict[str, Any], registry: EvidenceRegistry) -> dict[str, Any]:
         query = str(arguments.get("query") or "")
         top_k = max(1, min(int(arguments.get("top_k", 10)), MAX_VECTOR_RESULTS))
-        candidates = self._vector_candidates(query, top_k)
+        lexical_candidates = self._lexical_candidates(query, top_k)
+        vector_candidates = self._vector_candidates(query, top_k)
+        fulltext_candidates: list[dict[str, Any]] = []
+        warnings: list[str] = []
+        try:
+            fulltext_rows = self.store.fulltext_query(query, top_k)
+            seen_hashes: set[str] = set()
+            for row in fulltext_rows:
+                candidate = self._candidate_from_row(row, method="fulltext")
+                if candidate is None or candidate["retrieval_hash"] in seen_hashes:
+                    continue
+                seen_hashes.add(candidate["retrieval_hash"])
+                fulltext_candidates.append(candidate)
+        except Exception as exc:
+            # Hybrid retrieval remains available if the existing full-text index
+            # is temporarily unavailable; the failure is visible to the model.
+            warnings.append(f"Full-text candidate lookup unavailable: {exc}")
+
+        # Exact source wording is useful evidence for a hybrid candidate. Keep
+        # the existing vector ranking within its own list and use full-text
+        # candidates first when the query contains matching regulatory terms.
+        candidates: list[dict[str, Any]] = []
+        seen_hashes: set[str] = set()
+        for candidate in [*lexical_candidates, *fulltext_candidates, *vector_candidates]:
+            if candidate["retrieval_hash"] in seen_hashes:
+                continue
+            seen_hashes.add(candidate["retrieval_hash"])
+            candidates.append(candidate)
+            if len(candidates) >= top_k:
+                break
         for candidate in candidates:
             section_id = str(candidate["section"].get("id") or "")
             candidate["graph_section_requirements"] = self.store.section_requirements(section_id)
@@ -866,7 +1035,7 @@ class RetrievalToolExecutor:
             "tool": "HybridSearch", "query": query, "passages": candidates,
             "canonical_evidence": canonical["evidence"],
             "selected_sections": canonical["selected_sections"],
-            "warnings": [] if candidates else ["No production hybrid candidates found."],
+            "warnings": warnings + ([] if candidates else ["No production hybrid candidates found."]),
         }
 
     def execute(self, name: str, arguments: dict[str, Any], registry: EvidenceRegistry) -> dict[str, Any]:
