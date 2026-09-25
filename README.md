@@ -4,6 +4,17 @@ A source-grounded question-answering app for the included `HVAC-Codes.pdf`. The 
 
 The Streamlit interface is `bot.py`; the runtime is `v2_ingestion/react_runtime.py`. The older ingestion and agent files remain in the repository for historical context, but `bot.py` uses the v2 runtime through `agent.py`.
 
+## Current interface and validation
+
+The redesigned HVAC Sourcebook provides chat, a searchable 897-section index, exact
+source excerpts, and a PDF page reader with downloads. Offline source browsing does
+not require API credentials. Edition and jurisdiction are explicitly unverified.
+
+See [Operations](OPERATIONS.md) for existing-environment launch, resource limits,
+checkpoints, and deployment prerequisites. See [Evaluation](evals/README.md) for the
+120-case live comparison and its limitations. Automated support checks deliberately
+abstain when uncertain; they are not expert compliance certification.
+
 ## How it works
 
 ```text
@@ -12,13 +23,15 @@ Question
   -> CypherSearch, VectorSearch, and/or HybridSearch
   -> read-only Neo4j Aura results
   -> canonical section evidence (including applicable lists and exceptions)
-  -> answer with evidence IDs
+  -> structured claims with exact source quotes
+  -> deterministic quote/number checks + separate semantic support review
+  -> supported answer or abstention
   -> deterministic Section/page citations
 ```
 
 - `CypherSearch` accepts bounded, read-only Cypher against the current graph.
 - `VectorSearch` queries the existing `hvac_passage_embeddings` index using `text-embedding-3-large`.
-- `HybridSearch` combines vector candidates with graph context and canonical evidence.
+- `HybridSearch` fuses lexical, full-text, and vector rankings by reciprocal rank, then expands canonical evidence.
 
 The graph uses `Document`, `Chapter`, `Section`, and `Requirement` nodes, with `CONTAINS` and `STATES` relationships. The agent may call more than one tool; there is no fixed section-number router in the final runtime. It cites supplied evidence IDs such as `[E1]`, which the application renders as a Section/page citation using the local evidence map. The special `section:unassigned` ownership is excluded from authoritative retrieval.
 

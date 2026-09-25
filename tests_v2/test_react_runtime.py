@@ -217,7 +217,7 @@ class ReactRuntimeSafetyTests(unittest.TestCase):
         )
 
     def test_new_question_resets_ledger_ids_history_and_tool_counter(self):
-        runtime = ReActGraphRAG()
+        runtime = ReActGraphRAG(strict_answers=False, )
         first = runtime.start_session("Q1: Section 303.3", question_id="Q1")
         first.registry.add("303.3", 10, "Q1 evidence", "Prohibited locations")
         first.input_items.append({"type": "function_call_output", "output": "Q1 tool output"})
@@ -237,7 +237,7 @@ class ReactRuntimeSafetyTests(unittest.TestCase):
         self.assertNotIn("Q1 evidence", json.dumps(second.input_items))
 
     def test_initial_requests_for_independent_questions_have_stable_size(self):
-        runtime = ReActGraphRAG()
+        runtime = ReActGraphRAG(strict_answers=False, )
         questions = {
             "Q1": "What does Section 303.3 prohibit, and what exceptions apply?",
             "Q2": "Are multiple fans allowed to provide the emergency ventilation rate?",
@@ -255,7 +255,7 @@ class ReactRuntimeSafetyTests(unittest.TestCase):
         self.assertNotIn("previous_response_id", requests[2])
 
     def test_same_question_history_survives_across_turns(self):
-        runtime = ReActGraphRAG()
+        runtime = ReActGraphRAG(strict_answers=False, )
         session = runtime.start_session("same question", question_id="same")
         session.input_items.extend([
             {"type": "function_call", "name": "HybridSearch", "call_id": "c1", "arguments": "{}"},
@@ -300,7 +300,7 @@ class ReactRuntimeSafetyTests(unittest.TestCase):
             def close(self):
                 return None
 
-        runtime = ReActGraphRAG(client=FakeClient(), store=FakeStore())
+        runtime = ReActGraphRAG(strict_answers=False, client=FakeClient(), store=FakeStore())
         result = runtime.answer("What does Section 303.3 prohibit?", question_id="Q1")
         self.assertEqual(result["status"], "failed")
         self.assertEqual(result["usage_checkpoints"][0]["response_id"], "resp-q1-1")
@@ -350,7 +350,7 @@ class ReactRuntimeSafetyTests(unittest.TestCase):
                 return [{"section_number": "303.3"}]
 
         with tempfile.TemporaryDirectory() as directory:
-            runtime = ReActGraphRAG(
+            runtime = ReActGraphRAG(strict_answers=False,
                 client=Client(), store=Store(), checkpoint_dir=Path(directory),
             )
             result = runtime.answer("What applies?", question_id="checkpoint-1")
@@ -406,7 +406,7 @@ class ReactRuntimeSafetyTests(unittest.TestCase):
         self.assertNotIn("debug", serialized)
 
     def test_checkpoint_round_trip_preserves_resume_order_and_call_pairing(self):
-        runtime = ReActGraphRAG()
+        runtime = ReActGraphRAG(strict_answers=False, )
         session = runtime.start_session("checkpoint round trip", question_id="round-trip")
         reasoning = serialize_response_output_for_resume({
             "type": "reasoning", "id": "rs_1", "summary": [],
@@ -491,7 +491,7 @@ class ReactRuntimeSafetyTests(unittest.TestCase):
 
         client = Client()
         store = UnavailableAura()
-        runtime = ReActGraphRAG(client=client, store=store)
+        runtime = ReActGraphRAG(strict_answers=False, client=client, store=store)
         result = runtime.answer("Can this be answered?", question_id="preflight")
         self.assertEqual(result["status"], "failed")
         self.assertIn("preflight", result["error"].lower())
@@ -556,7 +556,7 @@ class ReactRuntimeSafetyTests(unittest.TestCase):
         with tempfile.TemporaryDirectory() as directory:
             checkpoint_dir = Path(directory)
             first_store = CountingStore()
-            first_runtime = ReActGraphRAG(
+            first_runtime = ReActGraphRAG(strict_answers=False,
                 client=FirstClient(), store=first_store, checkpoint_dir=checkpoint_dir,
             )
             failed = first_runtime.answer("What applies?", question_id="resume-1")
@@ -575,7 +575,7 @@ class ReactRuntimeSafetyTests(unittest.TestCase):
 
             resume_client = ResumeClient()
             resume_store = CountingStore(fail=True)
-            resumed_runtime = ReActGraphRAG(
+            resumed_runtime = ReActGraphRAG(strict_answers=False,
                 client=resume_client, store=resume_store, checkpoint_dir=checkpoint_dir,
             )
             resumed = resumed_runtime.resume_from_checkpoint(checkpoint_path)
@@ -589,7 +589,7 @@ class ReactRuntimeSafetyTests(unittest.TestCase):
             self.assertEqual(resumed["citation_validation"]["cited_evidence_ids"], ["E1"])
 
     def test_checkpoint_resume_preserves_question_isolation(self):
-        runtime = ReActGraphRAG()
+        runtime = ReActGraphRAG(strict_answers=False, )
         first = runtime.start_session("Q1 Section 303.3", question_id="Q1", session_id="s1")
         first.registry.add("303.3", 10, "Q1 evidence", "Prohibited locations")
         first.input_items.extend([
@@ -605,7 +605,7 @@ class ReactRuntimeSafetyTests(unittest.TestCase):
         self.assertNotIn("q1-call", json.dumps(second.input_items))
 
     def test_conversation_memory_is_copied_without_react_state(self):
-        runtime = ReActGraphRAG()
+        runtime = ReActGraphRAG(strict_answers=False, )
         session = runtime.start_session(
             "Does that exception apply here?",
             question_id="follow-up",
@@ -654,7 +654,7 @@ class ReactRuntimeSafetyTests(unittest.TestCase):
                 return True
 
         with tempfile.TemporaryDirectory() as directory:
-            runtime = ReActGraphRAG(
+            runtime = ReActGraphRAG(strict_answers=False,
                 client=Client(), store=Store(), checkpoint_dir=Path(directory),
             )
             result = runtime.answer("Hi, what can you help me with?", question_id="chat")

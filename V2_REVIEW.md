@@ -56,7 +56,7 @@ relationship model describes v1 and should not be presented as the v2 schema.
    checkout and verify its recorded SHA-256 before using it. Semantic tests now
    consume regenerated reconciliation artifacts, rather than silently omitting them.
 
-## Highest-value next work
+## Original improvement plan (implementation status below)
 
 | Priority | Improvement and implementation | Acceptance evidence |
 | --- | --- | --- |
@@ -68,7 +68,7 @@ relationship model describes v1 and should not be presented as the v2 schema.
 | P2 | Make sources inspectable: return structured answer/evidence data to Streamlit, provide expandable exact excerpts and PDF page links, and show document edition/jurisdiction/coverage verified from source metadata. Bind graph and local corpus versions with hashes during preflight. | Clicking a citation displays the exact quoted source; stale corpus/graph combinations are detected. |
 | P2 | Separate runtime evidence assembly from benchmark helpers, centralize model/index configuration, and add checkpoint retention and explicit client lifecycle management. `.env.example` model settings currently do not control the hard-coded runtime constants. | Configuration tests, predictable cleanup, and no change to checkpoint call pairing or evidence IDs. |
 
-## Verification boundaries
+## Original review verification boundaries
 
 Local regression tests use fake model/database clients. No paid OpenAI request,
 Aura graph mutation, corpus regeneration, or live answer-quality benchmark was
@@ -80,3 +80,25 @@ the Streamlit interface because the changes concern runtime boundaries and tests
 Neo4j documents that driver read routing is not an access-control guarantee and
 supports transaction timeouts through `unit_of_work`:
 [Neo4j managed transactions](https://neo4j.com/docs/python-manual/current/transactions/).
+
+## Follow-up implementation and live validation
+
+The follow-up implements strict structured claims, quote/number validation, a
+separate semantic support review, mixed-request protections, reciprocal-rank
+fusion, bounded payloads and calls, centralized settings, client cleanup,
+source-hash preflight, completed-result checkpoint replay, and explicit retention
+cleanup. Evidence assembly now lives outside the benchmark. The Streamlit UI
+provides searchable sections, evidence excerpts, and individual PDF pages.
+
+A frozen 140-case candidate set has 20 development and 120 held-out cases. Live
+retrieval ablations and 360 answer checks completed within a conservative $0.636
+API ledger total. Results and limitations are in evals/README.md. Browser checks
+covered desktop and mobile source browsing; AppTest checks cover UI controls.
+
+Remaining work requires independent expert labels, verified edition/jurisdiction,
+and a restricted Aura application identity. The supplied database identity still
+has administrative privileges; no database writes or role changes were made.
+The evaluation shows a ranking improvement over the old concatenation, not an
+answer-correctness advantage over vector search. A learned reranker was not added
+without evidence that it would justify its cost. The strict checker has substantial
+abstention and needs expert-reviewed development cases to measure false rejection.

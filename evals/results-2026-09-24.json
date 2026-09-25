@@ -1,0 +1,59 @@
+{
+  "date": "2026-09-24",
+  "development_cases": 20,
+  "held_out_cases": 120,
+  "section_recall_denominator": 110,
+  "retrieval": {
+    "vector": 0.7909090909090909,
+    "legacy_hybrid": 0.2863636363636364,
+    "fused_hybrid": 0.7909090909090909
+  },
+  "answer_evaluation": {
+    "cases": 140,
+    "evaluated_pairs": 360,
+    "charged_or_reserved_usd": 0.6355208699999992,
+    "modes": {
+      "vector": {
+        "evaluated": 120,
+        "source_checked": 46,
+        "abstained": 74,
+        "errors": 0,
+        "negative_abstention_rate": 0.9,
+        "p50_seconds": 4.6560000000026776,
+        "p95_seconds": 11.406000000002678,
+        "expert_correctness": null,
+        "unsupported_claim_rate": null,
+        "exception_completeness": null
+      },
+      "legacy_hybrid": {
+        "evaluated": 120,
+        "source_checked": 14,
+        "abstained": 106,
+        "errors": 0,
+        "negative_abstention_rate": 1.0,
+        "p50_seconds": 2.5940000000009604,
+        "p95_seconds": 6.0789999999979045,
+        "expert_correctness": null,
+        "unsupported_claim_rate": null,
+        "exception_completeness": null
+      },
+      "fused_hybrid": {
+        "evaluated": 120,
+        "source_checked": 40,
+        "abstained": 80,
+        "errors": 0,
+        "negative_abstention_rate": 1.0,
+        "p50_seconds": 3.944999999999709,
+        "p95_seconds": 9.10899999999674,
+        "expert_correctness": null,
+        "unsupported_claim_rate": null,
+        "exception_completeness": null
+      }
+    },
+    "limitations": [
+      "Source-anchored template questions, no independent expert correctness labels.",
+      "Automated source checks are not a compliance guarantee.",
+      "Latency measured with 4 concurrent evaluation workers."
+    ]
+  }
+}

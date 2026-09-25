@@ -38,7 +38,7 @@ class RuntimeBoundaryTests(unittest.TestCase):
         driver = MagicMock()
         session = driver.session.return_value.__enter__.return_value
         tx = Mock()
-        tx.run.return_value.data.return_value = [{"section_number": "303.3"}]
+        tx.run.return_value = [{"section_number": "303.3"}]
         def execute(read):
             self.assertEqual(read.timeout, QUERY_TIMEOUT_SECONDS)
             return read(tx)
@@ -63,7 +63,7 @@ class RuntimeBoundaryTests(unittest.TestCase):
         store = Mock(spec=["read_cypher"])
         store.read_cypher.return_value = [{"section_number": "303.3"}]
         with tempfile.TemporaryDirectory() as directory:
-            runtime = ReActGraphRAG(store=store, client=SimpleNamespace(responses=responses), max_tool_calls=1, checkpoint_dir=Path(directory))
+            runtime = ReActGraphRAG(strict_answers=False, store=store, client=SimpleNamespace(responses=responses), max_tool_calls=1, checkpoint_dir=Path(directory))
             result = runtime.answer("What does Section 303.3 prohibit?")
             if interrupt:
                 self.assertEqual(result["status"], "failed")

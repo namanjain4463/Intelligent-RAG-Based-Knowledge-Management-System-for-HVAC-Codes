@@ -64,7 +64,8 @@ Thumbs.db
 htmlcov/
 
 # Streamlit
-.streamlit/
+.streamlit/*
+!.streamlit/config.toml
 .cache/
 
 # Local data, model responses, and paid embedding caches
