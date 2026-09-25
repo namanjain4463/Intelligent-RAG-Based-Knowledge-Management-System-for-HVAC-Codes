@@ -12,4 +12,4 @@ if ($EnvFile) {
 # This launcher selects the validated v2 index; it does not rewrite a legacy .env.
 $env:VECTOR_INDEX_NAME = "hvac_passage_embeddings"
 $env:VECTOR_DIMENSION = "3072"
-python -m streamlit run bot.py --server.port $Port
+python -m streamlit run bot.py --server.address 127.0.0.1 --server.port $Port

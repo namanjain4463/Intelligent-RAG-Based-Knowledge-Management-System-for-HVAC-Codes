@@ -1,17 +1,19 @@
 # HVAC Codes GraphRAG Assistant
 
-A source-grounded question-answering app for the included `HVAC-Codes.pdf`. The current v2 runtime uses a ReAct agent to choose among three retrieval tools, reads the validated graph in Neo4j Aura, and assembles answer evidence from the canonical structural corpus.
+A clone-and-run GraphRAG + ReAct proof of concept for questions about `HVAC-Codes.pdf`. It is a research/portfolio demo, not a production service. The current v2 runtime uses a ReAct agent to choose among three retrieval tools, reads the validated graph in Neo4j Aura, and assembles answer evidence from the canonical structural corpus.
 
 The Streamlit interface is `bot.py`; the runtime is `v2_ingestion/react_runtime.py`. The older ingestion and agent files remain in the repository for historical context, but `bot.py` uses the v2 runtime through `agent.py`.
 
 ## Current interface and validation
 
-The redesigned HVAC Sourcebook provides chat, a searchable 897-section index, exact
-source excerpts, and a PDF page reader with downloads. Offline source browsing does
-not require API credentials. Edition and jurisdiction are explicitly unverified.
+The HVAC Assistant provides chat, section search, references, and a PDF reader.
+An optional answer inspector displays actual tool actions and section relationships.
+Its offline reference-removal experiment shows which claims lose citation coverage;
+it does not claim that removing a citation changes factual truth. No additional API
+calls are made by the inspector. Technical details stay outside the main chat view.
 
 See [Operations](OPERATIONS.md) for existing-environment launch, resource limits,
-checkpoints, and deployment prerequisites. See [Evaluation](evals/README.md) for the
+checkpoints, and optional hosting considerations. See [Evaluation](evals/README.md) for the
 120-case live comparison and its limitations. Automated support checks deliberately
 abstain when uncertain; they are not expert compliance certification.
 
@@ -132,3 +134,23 @@ For deployment, provision database credentials restricted to reads. Driver read
 routing and application query validation are not database authorization. Generated
 Cypher has a literal terminal row limit, rejects UNION, and uses a 15-second
 transaction timeout; a row limit does not bound the size of an individual value.
+
+## Engineering contribution and scope
+
+This project combines a ReAct tool loop (observe a result, then choose another
+retrieval action or answer) with a hierarchical document graph in Aura and
+canonical section expansion. ReAct refers to the agent pattern, not React.js;
+the UI uses Streamlit. Some questions need only one retrieval action.
+
+The distinctive demonstrator is an inspectable answer pipeline: recorded tool
+actions, real section-parent links, claim-to-reference dependencies, and an
+offline reference-removal experiment. Together with resumable tool-call pairing
+and measured retrieval ablations, this is an engineering contribution, not a claim
+of a new research algorithm. Parent links displayed by the inspector come from
+the local document structure; they do not pretend a database traversal happened.
+
+For a stronger research claim, collect independently reviewed questions requiring
+parent conditions or exceptions and compare identical retrieval with and without
+section expansion. The existing ranking ablation does not isolate this graph effect.
+No production hosting is required. Clone, configure your own credentials and
+populated Aura database, and run locally. Cloning does not provision the database.

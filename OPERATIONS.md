@@ -1,4 +1,4 @@
-# Deployment and operations
+# Running the proof of concept
 
 The Streamlit app now returns structured claims, checks exact quotes and numbers,
 and runs a separate support/qualification review. Failure at any step yields an
@@ -21,9 +21,10 @@ The launcher selects `hvac_passage_embeddings` / 3072 for v2 without changing th
 original `.env`. Launch from the environment where runtime dependencies are
 installed. `python -m streamlit run bot.py` remains supported with a correct `.env`.
 
-## Database access
+## Database access (optional hosting considerations)
 
-Use an Aura identity restricted to reads for a deployed application. The supplied
+Production hosting is outside this project’s scope. If you later share a hosted
+instance, use an Aura identity restricted to reads. The supplied
 account inspected during this work has an administrative role; it was not modified.
 Use the Aura console's supported user/role controls for the instance/tier to
 provision an application reader. Do not grant schema/admin/write permissions.

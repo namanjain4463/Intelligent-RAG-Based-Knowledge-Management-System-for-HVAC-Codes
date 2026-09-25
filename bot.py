@@ -1,11 +1,12 @@
-"""HVAC Sourcebook: evidence-first Streamlit workspace."""
+"""HVAC assistant proof of concept with an optional execution inspector."""
 import json
 from pathlib import Path
 import streamlit as st
 from v2_ingestion.corpus import corpus_metadata, pdf_page
+from v2_ingestion.inspector import build_inspection, citation_impact
 from v2_ingestion.react_runtime import query_agent_result, CanonicalEvidenceAssembler, EvidenceRegistry
 
-st.set_page_config(page_title='HVAC Sourcebook', page_icon='◈', layout='wide', initial_sidebar_state='expanded')
+st.set_page_config(page_title='HVAC Assistant', page_icon='◈', layout='wide', initial_sidebar_state='expanded')
 st.markdown('''<style>
 :root{--ink:#132c35;--muted:#65777b;--accent:#137c70;--paper:#f6f8f6}
 .stApp{background:var(--paper);color:var(--ink)}
@@ -50,39 +51,27 @@ st.session_state.setdefault('messages', [])
 st.session_state.setdefault('source_page', 1)
 
 with st.sidebar:
-    st.markdown('<div class="brand">◈ &nbsp; HVAC Sourcebook</div>', unsafe_allow_html=True)
-    st.caption('A reading room for mechanical code')
+    st.markdown('<div class="brand">◈ &nbsp; HVAC Assistant</div>', unsafe_allow_html=True)
+    st.caption('GraphRAG + ReAct')
     if st.button('＋ New conversation', width='stretch'):
         st.session_state.messages=[]
         st.rerun()
     st.divider()
-    st.markdown('**YOUR SOURCE LIBRARY**')
-    st.write(meta['title'])
-    st.caption(f"{meta['pages']} PDF pages · {len(meta['chapters'])} chapters")
-    with st.expander('Edition & coverage'):
-        st.write('**Edition:** '+meta['edition'])
-        st.write('**Jurisdiction:** '+meta['jurisdiction'])
-        st.caption(meta['source_note'])
-        for chapter in meta['chapters']:
-            st.write(f"{chapter['number']} — {chapter['title']}")
-    st.download_button('Download source PDF', (Path(__file__).parent/'HVAC-Codes.pdf').read_bytes(), 'HVAC-Codes.pdf', 'application/pdf', width='stretch')
-    st.divider()
-    st.caption('Read the source before applying a requirement. Answers cover this compilation; local amendments and applicability need separate confirmation.')
+    st.download_button('Download PDF', (Path(__file__).parent/'HVAC-Codes.pdf').read_bytes(), 'HVAC-Codes.pdf', 'application/pdf', width='stretch')
+    st.caption('A GraphRAG proof of concept.')
     if st.session_state.messages:
         transcript='\n\n'.join(f"{m['role'].upper()}\n{m['content']}" for m in st.session_state.messages)
         st.download_button('Export conversation', transcript, 'hvac-conversation.md', 'text/markdown', width='stretch')
 
-st.markdown('<div class="kicker">MECHANICAL CODES / SOURCE-GROUNDED RESEARCH</div>', unsafe_allow_html=True)
-st.markdown('<h1>Find the rule.<br>Understand the context.</h1>', unsafe_allow_html=True)
-st.markdown('<div class="dek">Explore requirements, conditions, and exceptions—with the original source always within reach.</div>', unsafe_allow_html=True)
-chat,index,reader=st.tabs(['Ask the source','Section index','PDF reader'])
+st.markdown('<div class="kicker">HVAC ASSISTANT</div>', unsafe_allow_html=True)
+st.markdown('<h1>Ask about HVAC codes.</h1>', unsafe_allow_html=True)
+st.markdown('<div class="dek">Explore requirements, compare sections, and find answers.</div>', unsafe_allow_html=True)
+chat,index,reader=st.tabs(['Chat','Sections','PDF'])
 
 
 def show_result(result, key):
     status=result.get('status','failed')
-    if status=='ok':
-        st.caption('SOURCE-CHECKED · Exact quotes + automated support review')
-    elif status in {'abstain','clarification'}:
+    if status in {'abstain','clarification'}:
         st.caption('MORE CONTEXT NEEDED')
     elif status=='failed':
         st.caption('SERVICE UNAVAILABLE')
@@ -94,9 +83,10 @@ def show_result(result, key):
     if related:
         blocks=[b for b in result.get('evidence',[]) if len(b.get('source_text',''))>40][:4]
     if blocks:
-        label=f'Inspect {len(blocks)} source passages' if not related else 'Inspect related passages'
+        label='References' if not related else 'Related sections'
         with st.expander(label):
-            st.caption('These passages were retrieved, but did not support a verified answer.' if related else 'Automated checking reduces errors; it is not an expert compliance determination.')
+            if related:
+                st.caption('Found during search; insufficient to answer this question.')
             for block in blocks:
                 page=block.get('page')
                 st.markdown(f"**Section {block['section_number']} · {block.get('section_title','')}**")
@@ -111,16 +101,31 @@ def show_result(result, key):
                 st.image(image,caption=f'Original source · PDF page {preview}',width='stretch')
                 st.download_button('Download this page',data,f'HVAC-page-{preview}.pdf','application/pdf',key=f'download-{key}')
     if result.get('latency_seconds'):
-        st.caption(f"{result['latency_seconds']:.1f}s · {len(blocks)} cited passages")
+        st.caption(f"{result['latency_seconds']:.1f}s")
+
+    if result.get('tool_trace') or claims:
+        with st.expander('How this answer was built'):
+            inspection=build_inspection(result, meta['document']['sections'])
+            st.caption('Recorded tool actions and section relationships—not private model reasoning.')
+            for step in inspection['steps']:
+                st.write(f"{step['step']}. **{step['tool']}** → {', '.join(step['sections']) or 'No sections returned'}")
+            if inspection['graph_dot']:
+                st.graphviz_chart(inspection['graph_dot'])
+                st.caption('Section hierarchy from the local document. Highlighted sections were cited; lines do not imply a Cypher traversal occurred.')
+            if claims:
+                st.markdown('**What if a reference were missing?**')
+                removed=st.multiselect('Temporarily exclude references',inspection['cited_ids'],key=f'without-{key}')
+                impacts=citation_impact(claims, removed)
+                for impact in impacts:
+                    label={'unchanged':'Unchanged','partial':'Some citations removed','uncovered':'All citations removed'}[impact['status']]
+                    st.write(f"**Claim {impact['claim']}: {label}** — {impact['text']}")
+                st.caption('Citation dependency check only. Remaining references may not support the entire claim. This does not regenerate or revalidate the answer and makes no API calls.')
+            st.download_button('Export execution record',json.dumps(inspection,ensure_ascii=False,indent=2),'execution-record.json','application/json',key=f'trace-{key}')
 
 with chat:
     if not st.session_state.messages:
         st.markdown('<div class="hero-rule"></div>',unsafe_allow_html=True)
-        a,b,c=st.columns(3)
-        a.metric('Sections',f"{meta['sections']:,}")
-        b.metric('Chapters',str(len(meta['chapters'])))
-        c.metric('Source pages',str(meta['pages']))
-        st.markdown('### Start with a precise question')
+        st.markdown('### What would you like to know?')
         st.caption('Include the equipment, location, and conditions when they matter.')
         cols=st.columns(3)
         examples=['What does Section 303.3 prohibit?','Are multiple fans allowed for emergency ventilation?','Where is refrigerant piping prohibited?']
@@ -128,34 +133,32 @@ with chat:
             with col:
                 with st.container(border=True):
                     st.write(text)
-        st.caption('Or explore the section index and PDF without making an API request.')
     for i,message in enumerate(st.session_state.messages):
-        with st.chat_message(message['role'],avatar='◈' if message['role']=='assistant' else None):
+        with st.chat_message(message['role'],avatar=':material/smart_toy:' if message['role']=='assistant' else None):
             if message['role']=='assistant':
                 show_result(message['result'],f'msg-{i}')
             else:
                 st.markdown(message['content'])
-    prompt=st.chat_input('Ask a question about the supplied HVAC code…',max_chars=4000)
+    prompt=st.chat_input('Ask about HVAC codes…',max_chars=4000)
     if prompt:
         history=[{'role':m['role'],'content':m['content']} for m in st.session_state.messages[-8:]]
         st.session_state.messages.append({'role':'user','content':prompt})
         with st.chat_message('user'):
             st.markdown(prompt)
-        with st.chat_message('assistant',avatar='◈'):
-            with st.status('Finding source passages and checking the answer…',expanded=False) as progress:
+        with st.chat_message('assistant',avatar=':material/smart_toy:'):
+            with st.status('Working on your question…',expanded=False) as progress:
                 result=query_agent_result(prompt,history)
-                progress.update(label='Source review complete' if result['status']=='ok' else 'Request complete',state='complete')
+                progress.update(label='Answer ready' if result['status']=='ok' else 'Request complete',state='complete')
             show_result(result,f'msg-{len(st.session_state.messages)}')
         st.session_state.messages.append({'role':'assistant','content':result['answer'],'result':result})
         st.rerun()
 
 with index:
-    st.subheader('A direct route to the source')
-    st.caption('Browse every numbered section in the local corpus, including nested sections. No model calls.')
+    st.subheader('Browse sections')
     query=st.text_input('Find a section',placeholder='Try 303.3, ventilation, or refrigerant')
     sections=[s for s in meta['document']['sections'] if s.get('number') and s['number']!='unassigned']
     matches=[s for s in sections if query.casefold() in (s['number']+' '+s.get('title','')).casefold()]
-    st.caption(f'{len(matches)} matching sections · {len(sections)} total')
+    st.caption(f'{len(matches)} matches')
     if matches:
         choice=st.selectbox('Choose a section',options=[s['number'] for s in matches],format_func=lambda n:f"{n} — {assembler().sections_by_number[n].get('title','')}")
         result=assembler().assemble([choice],EvidenceRegistry())
@@ -167,13 +170,13 @@ with index:
         if blocks and blocks[0].get('page') and st.session_state.get('selected_section') != choice:
             st.session_state.source_page=int(blocks[0]['page'])
             st.session_state.selected_section=choice
-        st.caption('The PDF reader opens at the selected section. Check related sections and exceptions too.')
+        st.caption('Open the PDF tab to view this section.')
     else:
         st.info('No matching section. Try a shorter title or a section number.')
 
 with reader:
-    st.subheader('Read the original')
+    st.subheader('PDF')
     page=st.number_input('PDF page',min_value=1,max_value=meta['pages'],value=st.session_state.source_page,step=1)
     image,data=pdf_page(int(page))
     st.download_button(f'Download page {page}',data,f'HVAC-page-{page}.pdf','application/pdf')
-    st.image(image,caption=f'HVAC code compilation · PDF page {page} of {meta["pages"]}',width='stretch')
+    st.image(image,caption=f'Page {page} of {meta["pages"]}',width='stretch')
