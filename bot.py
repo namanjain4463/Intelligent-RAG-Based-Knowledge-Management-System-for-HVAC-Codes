@@ -67,7 +67,6 @@ with st.sidebar:
     view=st.radio('Workspace',['Chat','Sections','PDF'],label_visibility='collapsed',key='view')
     st.divider()
     st.download_button('Download PDF', (Path(__file__).parent/'HVAC-Codes.pdf').read_bytes(), 'HVAC-Codes.pdf', 'application/pdf', width='stretch')
-    st.caption('A GraphRAG proof of concept.')
     if st.session_state.messages:
         transcript='\n\n'.join(f"{m['role'].upper()}\n{m['content']}" for m in st.session_state.messages)
         st.download_button('Export conversation', transcript, 'hvac-conversation.md', 'text/markdown', width='stretch')
@@ -79,7 +78,7 @@ def show_result(result, key):
     if result.get('activity'):
         with st.expander('Activity', expanded=False):
             for event in result['activity']:
-                st.write('✓ '+event)
+                st.write('• '+event)
     st.markdown(result.get('answer',''))
     claims=result.get('claims',[])
     used={eid for c in claims for eid in c.get('evidence_ids',[])}
@@ -108,12 +107,12 @@ def show_result(result, key):
     if result.get('latency_seconds'):
         st.caption(f"{result['latency_seconds']:.1f}s")
 
-    if result.get('tool_trace') or claims:
+    if result.get('evidence') or claims:
         with st.expander('Explore the answer'):
             inspection=build_inspection(result, meta['document']['sections'])
             st.caption('Recorded tool actions and section relationships—not private model reasoning.')
             for step in inspection['steps']:
-                st.write(f"{step['step']}. **{step['tool']}** → {', '.join(step['sections']) or ('HVAC conversation' if step['tool']=='GeneralInfo' else 'No sections returned')}")
+                st.write(f"**{step['tool']}** · {', '.join(step['sections']) or ('HVAC conversation' if step['tool']=='GeneralInfo' else 'No sections returned')}")
             if inspection['graph_dot']:
                 st.graphviz_chart(inspection['graph_dot'])
                 st.caption('Section hierarchy from the local document. Highlighted sections were cited; lines do not imply a Cypher traversal occurred.')
@@ -152,7 +151,7 @@ if view == 'Chat':
         st.rerun()
     pending=st.session_state.get('pending')
     if pending:
-        history=[{'role':m['role'],'content':m['content']} for m in st.session_state.messages[:-1][-8:]]
+        history=[{'role':m['role'],'content':m['content']} for m in st.session_state.messages[:-1]]
         events=[]
         with st.chat_message('assistant',avatar=':material/smart_toy:'):
             with st.status('Working…',expanded=True) as progress:

@@ -1,5 +1,6 @@
 """Bounded HVAC conversation tool. No ungrounded code or compliance advice."""
 import re
+from .conversation import prepare_history, resolve_retry
 
 GENERAL_INFO_SPEC = {
     'type': 'function', 'name': 'GeneralInfo', 'strict': True,
@@ -19,6 +20,11 @@ TOPICS = {
 
 
 def general_info(question, history=None):
+    history = prepare_history(history)
+    resolved = resolve_retry(question, history)
+    if resolved is None:
+        return {'tool':'GeneralInfo','action':'answer','status':'clarification','answer':'Which HVAC question would you like me to retry?','canonical_evidence':[],'selected_sections':[]}
+    question = resolved
     text = re.sub(r"\s+", ' ', str(question)).strip().lower().rstrip('?.!')
     text = re.sub(r'^(?:hi|hello|hey)[,! ]+\s*(?=who |what |how |explain |tell )', '', text)
     base = {'tool': 'GeneralInfo', 'canonical_evidence': [], 'selected_sections': []}
@@ -34,7 +40,7 @@ def general_info(question, history=None):
         return answer('I am your HVAC assistant. I can explain HVAC concepts, find code requirements, compare sections, and show the references behind an answer.', 'conversation')
     if text in {'explain that more simply','explain it simply','what does that mean','tell me more'} and history:
         previous = next((m.get('content','') for m in reversed(history) if m.get('role')=='user'), '')
-        previous_result = general_info(previous)
+        previous_result = general_info(previous, history[:-1] if history[-1]['role']=='user' else [])
         if previous_result.get('topic'):
             topic = previous_result['topic']
             return dict(answer(TOPICS[topic]), topic=topic)
@@ -46,7 +52,7 @@ def general_info(question, history=None):
         topic = match[1].rstrip('s') if match[1] not in TOPICS else match[1]
         return dict(answer(TOPICS[topic]), topic=topic)
     in_scope = re.search(r'\b(hvac|heat(?:ing)?|cooling|ventilat\w*|refriger\w*|duct\w*|fan\w*|boiler\w*|furnace\w*|thermostat\w*|air|code|section|equipment|clearance|piping|pipe|303\.\d+)\b', text)
-    follow_up = history and re.search(r'\b(that|it|this|those|they|same|more|why|yes|no)\b', text)
+    follow_up = history and re.search(r'\b(that|it|this|those|they|same|more|why|yes|no|exceptions|conditions|restrictions)\b|^(?:what about|how about|explain|elaborate|summari[sz]e|continue|go on|simplify|expand)\b', text)
     if in_scope or follow_up:
         return dict(base, action='retrieve', answer='Use retrieval for this question; GeneralInfo cannot establish code requirements.')
     return answer('I can help with HVAC topics only. Try asking about heating, cooling, ventilation, equipment, or an HVAC code section.', 'out_of_scope')

@@ -75,3 +75,15 @@ to the total authorized cap before starting Streamlit. All chat model/embedding
 calls then share that ledger. Clients within the process are serialized; do not
 run a second process against the same ledger. These optional settings do not edit
 the private .env file. GeneralInfo shortcuts are offline.
+
+## Legacy environment compatibility and conversation
+
+The v2 runtime maps the known legacy index name `hvac_requirement_embeddings`
+to `hvac_passage_embeddings`; custom index names remain unchanged. The private
+.env is not rewritten. Preflight still verifies index state and dimensions, and
+configuration failures are distinguished from connectivity failures.
+
+Chat context retains up to 32 user/assistant messages within 32,000 characters,
+with a 4,000-character per-message bound. Explicit retries resolve to the latest
+non-retry user question before scope checking. Prior assistant messages are context,
+not code evidence. Repeating a previous message is an offline conversation action.

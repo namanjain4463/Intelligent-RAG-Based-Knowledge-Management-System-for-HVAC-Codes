@@ -23,6 +23,7 @@ from neo4j import GraphDatabase, unit_of_work
 from .runtime_settings import SETTINGS
 from .ranking import fuse_rankings
 from .general_info import general_info, GENERAL_INFO_SPEC
+from .conversation import prepare_history, resolve_retry, recall_answer
 from .answer_validation import (ANSWER_SCHEMA, VERDICT_SCHEMA, ANSWER_INSTRUCTIONS, ABSTENTION, CLARIFICATION, CONVERSATION, is_pure_conversation, validate_claims, verdict_is_supported, render_claims)
 
 from .evidence import (
@@ -84,6 +85,8 @@ deterministic router.
 Scope and response policy:
 - The authoritative domain is the supplied HVAC code corpus and questions that
   naturally help a user navigate it.
+- Read the user and assistant chat history to interpret follow-ups. Earlier answers
+  and service errors are conversation context, not authoritative code evidence.
 - For regulatory/code questions, use retrieval and answer only from the supplied
   canonical evidence.
 - For greetings, identity questions, capability questions, and ordinary follow-ups
@@ -1316,18 +1319,7 @@ class ReActGraphRAG:
         evidence ledgers, checkpoints, or graph state between questions.
         """
 
-        if not conversation_history:
-            return []
-        result: list[dict[str, str]] = []
-        for item in conversation_history[-8:]:
-            if not isinstance(item, dict):
-                continue
-            role = str(item.get("role") or "").strip().lower()
-            content = str(item.get("content") or "").strip()
-            if role not in {"user", "assistant"} or not content:
-                continue
-            result.append({"role": role, "content": content[:4000]})
-        return result
+        return prepare_history(conversation_history)
 
     @staticmethod
     def _request_configuration() -> dict[str, Any]:
@@ -1888,7 +1880,7 @@ class ReActGraphRAG:
                 else:
                     kind, answer = 'abstain', ABSTENTION
                 return dict(base, status=kind, answer=answer, claims=[], answer_type=kind)
-            review_input = {'question': session.question, 'history': [x for x in session.input_items if x.get('role') in {'user', 'assistant'}][-8:],
+            review_input = {'question': session.question, 'history': [x for x in session.input_items if x.get('role') in {'user', 'assistant'}][-32:],
                             'claims': payload['claims'], 'evidence': evidence}
             review_text = _compact_json(review_input)
             if len(review_text.encode('utf-8')) > SETTINGS.max_request_bytes:
@@ -1971,6 +1963,8 @@ def _user_facing_failure(message: str) -> str:
     """Turn runtime failures into useful, non-internal UI guidance."""
 
     lowered = str(message or "").casefold()
+    if 'vector index' in lowered or 'embedding dimensions' in lowered:
+        return 'The search index is unavailable or configured incorrectly. This is a search setup issue, not a lost graph connection.'
     if "preflight" in lowered or "aura" in lowered or "connect" in lowered:
         return "I’m sorry, I can’t reach the HVAC code knowledge graph right now. Please try again in a moment."
     if "citation" in lowered or "evidence" in lowered or "grounded" in lowered:
@@ -1986,6 +1980,16 @@ def _user_facing_failure(message: str) -> str:
 
 
 def query_agent_result(question: str, conversation_history=None, on_progress=None) -> dict[str, Any]:
+    conversation_history = prepare_history(conversation_history)
+    recalled = recall_answer(question, conversation_history)
+    if recalled is not None:
+        return {'status':'conversation','answer':recalled,'claims':[],'evidence':[]}
+    original_question = str(question or '').strip()
+    question = resolve_retry(original_question, conversation_history)
+    if question is None:
+        return {'status':'clarification','answer':'Which HVAC question would you like me to retry?','claims':[],'evidence':[]}
+    if question != original_question and on_progress:
+        on_progress('Retrying your previous question')
     if re.fullmatch(r'(?:what(?: all)? sections are there|list (?:all )?sections|how many (?:sections|chapters) (?:are there|are included))[?.! ]*', question.strip(), re.I):
         from .corpus import corpus_metadata
         metadata = corpus_metadata()
@@ -2009,6 +2013,7 @@ def query_agent_result(question: str, conversation_history=None, on_progress=Non
         if not result.get('answer'):
             result['answer'] = _user_facing_failure(str(result.get('error', 'unknown runtime error')))
         result['latency_seconds'] = round(time.monotonic() - started, 3)
+        result['resolved_question'] = question
         return result
     except Exception:
         return {'status': 'failed', 'answer': 'The source service is unavailable. You can still browse the local section index and PDF.', 'evidence': [], 'claims': []}
