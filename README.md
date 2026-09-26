@@ -169,8 +169,3 @@ world-knowledge chatbot. Whole-request matching prevents a concept keyword from
 authorizing an unrelated or regulatory answer. Code questions still use retrieval.
 The tool is exposed to the agent; recognized conversation shortcuts also invoke
 it directly without model/database calls, recorded as deterministic shortcuts.
-
-A three-turn browser check covered a heat-pump explanation, a cited Section 303.7
-answer, and a Section 303.6 follow-up that abstained. Loading and completed layouts
-were inspected. The shared live-test ledger reached approximately $0.64434 against
-the existing $1 cap; no new evaluation budget was assumed.
