@@ -22,6 +22,7 @@ import pandas as pd
 from neo4j import GraphDatabase, unit_of_work
 from .runtime_settings import SETTINGS
 from .ranking import fuse_rankings
+from .general_info import general_info, GENERAL_INFO_SPEC
 from .answer_validation import (ANSWER_SCHEMA, VERDICT_SCHEMA, ANSWER_INSTRUCTIONS, ABSTENTION, CLARIFICATION, CONVERSATION, is_pure_conversation, validate_claims, verdict_is_supported, render_claims)
 
 from .evidence import (
@@ -75,7 +76,7 @@ SYSTEM_INSTRUCTIONS = f"""You are the HVAC Codes ReAct GraphRAG assistant.
 
 {GRAPH_SCHEMA_DESCRIPTION}
 
-You have exactly three retrieval tools: CypherSearch, VectorSearch, and HybridSearch.
+You have three retrieval tools: CypherSearch, VectorSearch, and HybridSearch, plus GeneralInfo for HVAC conversation. Use GeneralInfo for non-regulatory conversation and basic HVAC concepts. GeneralInfo cannot establish code requirements.
 Choose the first tool yourself. You may call any tool first, call tools sequentially,
 and revise your retrieval strategy after each observation. Do not follow a fixed
 deterministic router.
@@ -172,7 +173,7 @@ TOOL_SPECS: list[dict[str, Any]] = [
     {
         "type": "function",
         "name": "HybridSearch",
-        "description": "Use semantic vector candidates followed by graph traversal to recover Sections, ancestors, linked production Requirements, and canonical evidence.",
+        "description": "Fuse lexical, full-text and vector rankings from the graph, then expand canonical sections, ancestors and referenced tables.",
         "strict": True,
         "parameters": {
             "type": "object",
@@ -186,6 +187,8 @@ TOOL_SPECS: list[dict[str, Any]] = [
     },
 ]
 
+
+TOOL_SPECS.append(GENERAL_INFO_SPEC)
 
 def load_environment() -> None:
     try:
@@ -428,6 +431,8 @@ def compact_tool_observation(
     """
 
     observation = observation if isinstance(observation, dict) else {}
+    if observation.get("tool") == "GeneralInfo":
+        return dict(observation)
     tool_name = str(observation.get("tool") or "UnknownTool")
     compact: dict[str, Any] = {"tool": tool_name, "candidates": []}
 
@@ -1120,6 +1125,8 @@ class RetrievalToolExecutor:
         }
 
     def execute(self, name: str, arguments: dict[str, Any], registry: EvidenceRegistry) -> dict[str, Any]:
+        if name == "GeneralInfo":
+            return general_info(arguments.get("question", ""))
         dispatch: dict[str, Callable[[dict[str, Any], EvidenceRegistry], dict[str, Any]]] = {
             "CypherSearch": self.cypher_search,
             "VectorSearch": self.vector_search,
@@ -1237,7 +1244,7 @@ class ReActSession:
 
 
 class ReActGraphRAG:
-    """Responses API ReAct loop with exactly three retrieval tools."""
+    """Responses API ReAct loop with three retrieval tools and bounded HVAC conversation."""
 
     def __init__(
         self,
@@ -1248,7 +1255,9 @@ class ReActGraphRAG:
         max_tool_calls: int = MAX_TOOL_CALLS,
         checkpoint_dir: Path | None = None,
         strict_answers: bool = True,
+        on_progress: Callable[[str], None] | None = None,
     ) -> None:
+        self.on_progress = on_progress
         self.strict_answers = strict_answers
         self._owns_client = client is None
         self.store = store
@@ -1260,6 +1269,10 @@ class ReActGraphRAG:
         self.last_session: ReActSession | None = None
         self.checkpoint_dir = Path(checkpoint_dir) if checkpoint_dir is not None else ROOT / "v2_output" / "react" / "checkpoints"
         self.last_checkpoint_path: Path | None = None
+
+    def _progress(self, message: str) -> None:
+        if self.on_progress:
+            self.on_progress(message)
 
     def _checkpoint_path(self, session_id: str) -> Path:
         safe_id = re.sub(r"[^A-Za-z0-9_.-]", "_", str(session_id))
@@ -1615,6 +1628,7 @@ class ReActGraphRAG:
         question = session.question
         if not question or len(question) > SETTINGS.max_question_chars:
             return self._safe_failure("Question is empty.", session.registry, [], 0, session=session)
+        self._progress("Connecting to the HVAC knowledge graph")
         store = self._get_store()
         preflight = getattr(store, "preflight", None)
         if callable(preflight):
@@ -1659,6 +1673,7 @@ class ReActGraphRAG:
                     raise ValueError('Per-question input budget exhausted')
                 if session.tool_calls == self.max_tool_calls:
                     request_configuration["tool_choice"] = "none"
+                self._progress("Choosing the next action" if not trace else "Reviewing search results")
                 response = self._get_client().responses.create(**request_configuration)
             except Exception as exc:
                 return self._safe_failure(
@@ -1791,6 +1806,10 @@ class ReActGraphRAG:
                     arguments = json.loads(raw_arguments or "{}")
                     if not isinstance(arguments, dict):
                         raise ValueError("Tool arguments must be a JSON object")
+                    self._progress({"CypherSearch":"Searching graph relationships", "VectorSearch":"Searching by meaning", "HybridSearch":"Combining search results", "GeneralInfo":"Checking HVAC conversation scope"}.get(str(name), "Running a tool"))
+                    # Do not let model-rewritten arguments launder a mixed request.
+                    if name == "GeneralInfo":
+                        arguments = {"question": session.question}
                     observation = tools.execute(str(name), arguments, registry)
                     model_observation = compact_tool_observation(observation, session.emitted_evidence_ids)
                     session.tool_calls += 1
@@ -1819,6 +1838,11 @@ class ReActGraphRAG:
                     "model_observation": model_observation,
                 })
             try:
+                if len(function_calls) == 1 and observation.get("tool") == "GeneralInfo" and observation.get("action") == "answer":
+                    result = {"status": observation["status"], "answer": observation["answer"], "claims": [], "evidence": [], "tool_trace": trace, "tool_calls": session.tool_calls}
+                    session.final_result = result
+                    self._persist_checkpoint(session, phase="answer_validated")
+                    return result
                 self._persist_checkpoint(
                     session, phase="ready_for_next_request",
                     response_output_items=response_output_items,
@@ -1844,6 +1868,7 @@ class ReActGraphRAG:
             self.client.close()
 
     def _validated_answer(self, raw, session, trace):
+        self._progress("Checking the answer against its references")
         evidence = session.registry.as_dicts()
         base = {'tool_calls': session.tool_calls, 'tool_trace': trace, 'evidence': evidence,
                 'question_id': session.question_id, 'session_id': session.session_id,
@@ -1960,17 +1985,26 @@ def _user_facing_failure(message: str) -> str:
     return "I’m sorry, I couldn’t complete that safely. Please try a specific HVAC code section or requirement."
 
 
-def query_agent_result(question: str, conversation_history=None) -> dict[str, Any]:
+def query_agent_result(question: str, conversation_history=None, on_progress=None) -> dict[str, Any]:
     if re.fullmatch(r'(?:what(?: all)? sections are there|list (?:all )?sections|how many (?:sections|chapters) (?:are there|are included))[?.! ]*', question.strip(), re.I):
         from .corpus import corpus_metadata
         metadata = corpus_metadata()
         chapters = ', '.join(str(c['number']) for c in metadata['chapters'])
-        return {'status': 'inventory', 'answer': f"The supplied compilation contains {metadata['sections']} numbered sections across {len(metadata['chapters'])} chapters ({chapters}). Use the Section index tab to search the complete list, including nested sections.", 'evidence': [], 'claims': []}
-    runtime = ReActGraphRAG()
+        return {'status': 'inventory', 'answer': f"The supplied compilation contains {metadata['sections']} numbered sections across {len(metadata['chapters'])} chapters ({chapters}). Use the Sections tab to search the complete list, including nested sections.", 'evidence': [], 'claims': []}
+    info = general_info(question, conversation_history)
+    if info['action'] == 'answer':
+        if on_progress:
+            on_progress('GeneralInfo · Checking HVAC conversation scope')
+        return {'status': info['status'], 'answer': info['answer'], 'evidence': [], 'claims': [],
+                'tool_trace': [{'tool': 'GeneralInfo', 'observation': info, 'selection': 'deterministic scope shortcut'}], 'tool_calls': 1}
+    budget_client = None
+    if os.getenv('HVAC_SPEND_LEDGER'):
+        from openai import OpenAI
+        from .budget import BudgetClient
+        budget_client = BudgetClient(OpenAI(timeout=SETTINGS.api_timeout,max_retries=0), Path(os.environ['HVAC_SPEND_LEDGER']), float(os.getenv('HVAC_SPEND_CAP_USD','1')))
+    runtime = ReActGraphRAG(client=budget_client, on_progress=on_progress)
     started = time.monotonic()
     try:
-        if is_pure_conversation(question):
-            return {'status': 'conversation', 'answer': CONVERSATION, 'evidence': [], 'claims': []}
         result = runtime.answer(question, conversation_history=conversation_history)
         if not result.get('answer'):
             result['answer'] = _user_facing_failure(str(result.get('error', 'unknown runtime error')))
@@ -1980,6 +2014,8 @@ def query_agent_result(question: str, conversation_history=None) -> dict[str, An
         return {'status': 'failed', 'answer': 'The source service is unavailable. You can still browse the local section index and PDF.', 'evidence': [], 'claims': []}
     finally:
         runtime.close()
+        if budget_client:
+            budget_client.close()
 
 
 def query_agent(question: str, conversation_history=None) -> str:

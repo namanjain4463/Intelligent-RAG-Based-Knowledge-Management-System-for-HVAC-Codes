@@ -7,6 +7,8 @@ import threading
 from pathlib import Path
 from types import SimpleNamespace
 
+_LEDGER_LOCKS = {}
+
 class BudgetExceeded(RuntimeError):
     pass
 
@@ -25,6 +27,14 @@ class BudgetClient:
         tmp.replace(self.path)
 
     def _call(self, kind, kwargs):
+        # Serialize clients sharing this file inside the UI process.
+        lock = _LEDGER_LOCKS.setdefault(str(self.path.resolve()), threading.RLock())
+        with lock:
+            if self.path.exists():
+                self.ledger = json.loads(self.path.read_text(encoding="utf-8"))
+            return self._call_locked(kind, kwargs)
+
+    def _call_locked(self, kind, kwargs):
         model = kwargs.get('model')
         if (kind, model) not in {('responses', 'gpt-5.6-luna'), ('embeddings', 'text-embedding-3-large')}:
             raise BudgetExceeded('No verified price for this model')

@@ -23,7 +23,7 @@ installed. `python -m streamlit run bot.py` remains supported with a correct `.e
 
 ## Database access (optional hosting considerations)
 
-Production hosting is outside this project’s scope. If you later share a hosted
+Production hosting is outside this projectâ€™s scope. If you later share a hosted
 instance, use an Aura identity restricted to reads. The supplied
 account inspected during this work has an administrative role; it was not modified.
 Use the Aura console's supported user/role controls for the instance/tier to
@@ -67,3 +67,11 @@ References: [Structured Outputs](https://developers.openai.com/api/docs/guides/s
 [Neo4j managed transactions](https://neo4j.com/docs/python-manual/current/transactions/),
 [GPT-5.6 Luna pricing](https://developers.openai.com/api/docs/models/gpt-5.6-luna),
 [embedding pricing](https://developers.openai.com/api/docs/models/text-embedding-3-large).
+
+## Budgeted local UI checks
+
+Set HVAC_SPEND_LEDGER to the existing evaluation spend.json and HVAC_SPEND_CAP_USD
+to the total authorized cap before starting Streamlit. All chat model/embedding
+calls then share that ledger. Clients within the process are serialized; do not
+run a second process against the same ledger. These optional settings do not edit
+the private .env file. GeneralInfo shortcuts are offline.

@@ -18,10 +18,10 @@ from v2_ingestion.react_runtime import (
 
 
 class ReactRuntimeSafetyTests(unittest.TestCase):
-    def test_exactly_three_runtime_tools_are_exposed(self):
+    def test_retrieval_and_general_info_tools_are_exposed(self):
         self.assertEqual(
             [tool["name"] for tool in TOOL_SPECS],
-            ["CypherSearch", "VectorSearch", "HybridSearch"],
+            ["CypherSearch", "VectorSearch", "HybridSearch", "GeneralInfo"],
         )
 
     def test_read_only_cypher_requires_bounded_query(self):

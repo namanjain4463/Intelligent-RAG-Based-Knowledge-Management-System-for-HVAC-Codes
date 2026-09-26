@@ -1,6 +1,6 @@
 # HVAC Codes GraphRAG Assistant
 
-A clone-and-run GraphRAG + ReAct proof of concept for questions about `HVAC-Codes.pdf`. It is a research/portfolio demo, not a production service. The current v2 runtime uses a ReAct agent to choose among three retrieval tools, reads the validated graph in Neo4j Aura, and assembles answer evidence from the canonical structural corpus.
+A clone-and-run GraphRAG + ReAct proof of concept for questions about `HVAC-Codes.pdf`. It is a research/portfolio demo, not a production service. The current v2 runtime uses a ReAct agent to choose among three retrieval tools plus the GeneralInfo conversation tool, reads the validated graph in Neo4j Aura, and assembles answer evidence from the canonical structural corpus.
 
 The Streamlit interface is `bot.py`; the runtime is `v2_ingestion/react_runtime.py`. The older ingestion and agent files remain in the repository for historical context, but `bot.py` uses the v2 runtime through `agent.py`.
 
@@ -154,3 +154,23 @@ parent conditions or exceptions and compare identical retrieval with and without
 section expansion. The existing ranking ablation does not isolate this graph effect.
 No production hosting is required. Clone, configure your own credentials and
 populated Aura database, and run locally. Cloning does not provision the database.
+
+## Chat and GeneralInfo
+
+The chat uses a fixed bottom composer, a single pending-response slot, and public
+activity events from actual runtime stages. Completed activity can be expanded;
+private model reasoning and opaque checkpoint content are never displayed.
+The implementation follows the [Responses function-calling contract](https://developers.openai.com/api/docs/guides/function-calling).
+
+`GeneralInfo` handles greetings, identity/help, and an authored set of basic HVAC
+concept explanations (HVAC, heat pumps, ventilation, refrigerant, thermostats,
+filters, ducts, and air conditioners). It is deliberately bounded, not a general
+world-knowledge chatbot. Whole-request matching prevents a concept keyword from
+authorizing an unrelated or regulatory answer. Code questions still use retrieval.
+The tool is exposed to the agent; recognized conversation shortcuts also invoke
+it directly without model/database calls, recorded as deterministic shortcuts.
+
+A three-turn browser check covered a heat-pump explanation, a cited Section 303.7
+answer, and a Section 303.6 follow-up that abstained. Loading and completed layouts
+were inspected. The shared live-test ledger reached approximately $0.64434 against
+the existing $1 cap; no new evaluation budget was assumed.
