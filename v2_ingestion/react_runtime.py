@@ -22,6 +22,7 @@ import pandas as pd
 from neo4j import GraphDatabase, unit_of_work
 from .runtime_settings import SETTINGS
 from .ranking import fuse_rankings
+from .equation_links import formula_key
 from .general_info import general_info, GENERAL_INFO_SPEC
 from .conversation import prepare_history, resolve_retry, recall_answer
 from .answer_validation import (ANSWER_SCHEMA, VERDICT_SCHEMA, ANSWER_INSTRUCTIONS, ABSTENTION, CLARIFICATION, CONVERSATION, is_pure_conversation, validate_claims, verdict_is_supported, render_claims)
@@ -72,6 +73,9 @@ The special section:unassigned ownership is not authoritative retrieval evidence
 The vector index is hvac_passage_embeddings on Requirement.retrieval_embedding,
 with 3072 dimensions and cosine similarity. Vector properties exist only on
 representative production Requirements."""
+
+LEGACY_CITATION_POLICY = 'When retrieval was used, cite every factual or regulatory statement using only\nsupplied evidence identifiers such as [E1]. Put a relevant evidence identifier at\nthe end of each paragraph or list group. If no retrieval was needed, do not invent\na citation merely to satisfy a format rule.'
+STRUCTURED_CITATION_POLICY = 'Return structured claims, not a formatted user-facing answer. Put evidence\nidentifiers only in evidence_ids and quotes.evidence_id. Never include [E#]\nmarkers inside claim text. The application renders all citations. Copy each quote\nverbatim from one supplied source block, including punctuation and spacing; do not\nrewrite or correct the source quotation. Use a separate claim when a different\nsource quotation is needed.'
 
 SYSTEM_INSTRUCTIONS = f"""You are the HVAC Codes ReAct GraphRAG assistant.
 
@@ -587,6 +591,7 @@ class CanonicalEvidenceAssembler:
         self.sections_by_id = {str(section["id"]): section for section in sections}
         self.section_numbers = set(self.sections_by_number)
         self.table_by_id = {str(table["id"]): table for table in self.document.get("tables", [])}
+        self.equations = self.document.get("equations", [])
         self.exception_fallbacks = build_exception_fallbacks()
         # Semantic review flags do not invalidate the underlying canonical
         # structural source.  Evidence assembly must expose every normative
@@ -721,6 +726,20 @@ class CanonicalEvidenceAssembler:
             section = self.sections_by_number[number]
             title = clean_section_title(section.get("title"))
             records = own_section_records(section, self.section_numbers, self.exception_fallbacks)
+            # A repaired equation's physical source position overrides a stale
+            # standalone formula paragraph filed under the next PDF heading.
+            foreign_formulas = {
+                (e['provenance'].get('page_no'), formula_key(e['text']))
+                for e in self.equations if e.get('section_id') != section['id']
+            }
+            records = [r for r in records if (r.get('page'), formula_key(r['source_text'])) not in foreign_formulas]
+            existing_formulas = {(r.get('page'), formula_key(r['source_text'])) for r in records}
+            for equation in self.equations:
+                page = equation['provenance'].get('page_no')
+                key = (page, formula_key(equation['text']))
+                if equation.get('section_id') == section['id'] and key not in existing_formulas:
+                    records.append({'page': page, 'source_text': equation['text']})
+                    existing_formulas.add(key)
             for record in records:
                 evidence_id = registry.add(
                     section_number=number,
@@ -1657,7 +1676,7 @@ class ReActGraphRAG:
                 request_configuration["input"] = input_items
                 if self.strict_answers:
                     request_configuration['text'] = {'format': {'type': 'json_schema', 'name': 'grounded_answer', 'strict': True, 'schema': ANSWER_SCHEMA}}
-                    request_configuration['instructions'] = SYSTEM_INSTRUCTIONS + ANSWER_INSTRUCTIONS
+                    request_configuration['instructions'] = SYSTEM_INSTRUCTIONS.replace(LEGACY_CITATION_POLICY, STRUCTURED_CITATION_POLICY) + ANSWER_INSTRUCTIONS
                 request_configuration['max_output_tokens'] = SETTINGS.max_output_tokens
                 if len(_compact_json(request_configuration).encode('utf-8')) > SETTINGS.max_request_bytes:
                     raise ValueError('Request context budget exceeded; narrow the question')

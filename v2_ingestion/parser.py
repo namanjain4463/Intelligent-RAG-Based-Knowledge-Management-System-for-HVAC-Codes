@@ -28,6 +28,7 @@ from .models import (
     UnparsedBlock,
 )
 from .pdf_provenance import PdfProvenanceIndex
+from .equation_links import equation_owner, equation_source
 from .source_inventory import (
     CHAPTER_REF_RE,
     EXCEPTION_RE,
@@ -632,9 +633,11 @@ class DoclingStructuralParser:
         for source in self.source_inventory.equations:
             source_by_number.setdefault(source["number"], []).append(source)
         for number, source_items in source_by_number.items():
-            source = next((item for item in source_items if "=" in item["text"]), source_items[0])
+            source = equation_source(source_items)
             source_variables = sorted({variable for item in source_items for variable in item["variables"]}, key=str.casefold)
+            owner = equation_owner(source, self.source_inventory.section_headings, {s.id for s in self.sections})
             if number in existing:
+                existing[number].section_id = owner
                 existing[number].variables = sorted(set(existing[number].variables) | set(source_variables), key=str.casefold)
                 if "=" in source["text"] and "=" not in existing[number].text:
                     existing[number].text = source["text"]
@@ -643,12 +646,14 @@ class DoclingStructuralParser:
             provenance = self._provenance(item, "equation", source["text"], report_missing=False)
             equation = Equation(
                 id=f"equation:{number}", equation_number=number, text=source["text"],
-                latex=None, variables=source_variables, section_id=self._nearest_section_id(source["page_no"]),
+                latex=None, variables=source_variables, section_id=owner,
                 order=len(self.equations), provenance=provenance,
             )
             self.equations.append(equation)
             existing[number] = equation
         self.equations.sort(key=lambda equation: (equation.provenance.page_no or 10**9, equation.equation_number or equation.id))
+        for section in self.sections:
+            section.equation_ids = [e.id for e in self.equations if e.section_id == section.id]
         for order, equation in enumerate(self.equations):
             equation.order = order
 

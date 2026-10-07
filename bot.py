@@ -1,4 +1,4 @@
-"""HVAC assistant proof of concept with an optional execution inspector."""
+"""HVAC GraphRAG assistant with source browsing and an execution inspector."""
 import json
 from pathlib import Path
 import streamlit as st
